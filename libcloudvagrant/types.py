@@ -109,6 +109,10 @@ class VagrantImage(base.NodeImage, Serializable):
             "name": self.name,
         }
 
+    def __repr__(self):
+        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
+        return "VagrantImage(%s)" % (" ".join(fields),)
+
 
 class VagrantNetwork(Serializable):
 
@@ -281,6 +285,10 @@ class VagrantNode(base.Node, Serializable):
             "image": self.image.to_dict(),
         }
 
+    def __repr__(self):
+        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
+        return "VagrantNode(%s)" % (" ".join(fields),)
+
 
 class VagrantNodeSize(base.NodeSize, Serializable):
 
@@ -352,6 +360,10 @@ class VagrantNodeSize(base.NodeSize, Serializable):
             "ram": self.ram,
             "cpus": self.extra["cpus"],
         }
+
+    def __repr__(self):
+        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
+        return "VagrantNodeSize(%s)" % (" ".join(fields),)
 
 
 class VagrantVolume(base.StorageVolume, Serializable):
@@ -427,3 +439,7 @@ class VagrantVolume(base.StorageVolume, Serializable):
             "attached_to": self.attached_to,
             "path": self.path,
         }
+
+    def __repr__(self):
+        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
+        return "VagrantVolume(%s)" % (" ".join(fields),)
