@@ -1,0 +1,8 @@
+-r requirements.txt
+
+coverage
+nose
+paramiko
+pep8
+pyflakes
+pylint

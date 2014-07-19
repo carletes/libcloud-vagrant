@@ -1,0 +1,46 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Automatically generated. Manual changes will be overwritten.
+
+Vagrant.configure("2") do |config|
+
+  {% for n in nodes %}
+  config.vm.define "{{ n.name }}" do |n|
+    n.vm.hostname = "{{ n.name }}"
+    n.vm.box = "{{ n.image.name }}"
+
+    n.vm.provider :virtualbox do |vb|
+      vb.customize [
+        "modifyvm", :id,
+        "--bioslogofadein", "off",
+        "--bioslogofadeout", "off",
+        "--bioslogodisplaytime", "0",
+        "--biosbootmenu", "disabled",
+        {% if n.size.cpus > 0 %}
+        "--cpus",   "{{ n.size.cpus }}",
+        {% endif %}
+        {% if n.size.ram > 0 %}
+        "--memory", "{{ n.size.ram }}",
+        {% endif %}
+      ]
+      {% if gui_enabled %}
+      vb.gui = true
+      {% endif %}
+    end
+
+    {% for addr in n.public_ips %}
+    n.vm.network "private_network",
+                 :ip => "{{ addr.ip }}",
+                 :netmask => "{{ addr.netmask }}"
+    {% endfor %}
+
+    {% for addr in n.private_ips %}
+    n.vm.network "private_network",
+                 ip: "{{ addr.ip }}",
+                 :netmask => "{{ addr.netmask }}",
+                 virtualbox__intnet: "{{ addr.network }}"
+    {% endfor %}
+  end
+  {% endfor %}
+end
