@@ -49,7 +49,7 @@ def test_num_cpus():
 
 
 def num_cpus(node):
-    ssh = driver._vagrant_ssh_config()
+    ssh = driver._vagrant_ssh_config(node.name)
     ssh["opts"] = " ".join([
         "-o 'StrictHostKeyChecking no'",
         "-o 'UserKnownHostsFile /dev/null'",

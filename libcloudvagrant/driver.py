@@ -30,7 +30,7 @@ import time
 
 from libcloud.common.types import LibcloudError
 from libcloud.compute import base
-from libcloud.compute.types import NodeState
+from libcloud.compute.types import DeploymentError, NodeState
 
 from libcloudvagrant import virtualbox
 from libcloudvagrant.catalogue import VagrantCatalogue
@@ -52,6 +52,21 @@ __all__ = [
 VAGRANT = "vagrant"
 
 _HOME = pwd.getpwuid(os.getuid()).pw_dir
+
+# ``NODE_ONLINE_WAIT_TIMEOUT`` and ``SSH_CONNECT_TIMEOUT`` are needed in our
+# reimplementation of ``deploy_node``,
+#
+# They're not part of the API exposed in ``libcloud.compute.base``, so we
+# provide fallback values, in case they get removed in the future
+try:
+    NODE_ONLINE_WAIT_TIMEOUT = base.NODE_ONLINE_WAIT_TIMEOUT
+except AttributeError:
+    NODE_ONLINE_WAIT_TIMEOUT = 10 * 60
+
+try:
+    SSH_CONNECT_TIMEOUT = base.SSH_CONNECT_TIMEOUT
+except AttributeError:
+    SSH_CONNECT_TIMEOUT = 5 * 60
 
 
 class VagrantDriver(base.NodeDriver):
@@ -213,17 +228,71 @@ class VagrantDriver(base.NodeDriver):
     def deploy_node(self, **kwargs):
         """Create a new node, and start deployment.
 
-        This method calls ``Node.deploy_node()`` with the default Vagrant SSH
-        connection parameters and credentials.
+        This function may raise a :class:`DeploymentException`, if a
+        create_node call was successful, but there is a later error (like SSH
+        failing or timing out).  This exception includes a Node object which
+        you may want to destroy if incomplete deployments are not desirable.
+
+        We use ``vagrant ssh-config <node>`` in order to get the SSH
+        connection parameters for the deployment task. In order to do that,
+        the node must be created first.
+
+        The base implementation makes use of the SSH connection parameters
+        *before* creating the node. Therefore we have to override it.
+
+        :param deploy: Deployment to run once machine is online and available
+                       to SSH.
+        :type deploy: :class:`Deployment`
+
+        :param ssh_timeout: Optional SSH connection timeout in seconds
+                            (default is 10).
+        :type ssh_timeout: ``float``
+
+        :param timeout: How many seconds to wait before timing out (default is
+                        600).
+        :type timeout: ``int``
+
+        :param max_tries: How many times to retry if a deployment fails before
+                          giving up (default is 3).
+        :type max_tries: ``int``
+
+        :return: The node object for the new node.
+        :rtype:  :class:`VagrantNode`
 
         """
-        ssh_config = self._vagrant_ssh_config()
-        kwargs["ssh_username"] = ssh_config["user"]
-        kwargs["ssh_port"] = ssh_config["port"]
-        kwargs["ssh_key"] = ssh_config["key"]
-        kwargs["ssh_interface"] = ssh_config["host"]
-        self.log.debug("Deploy args: %s", kwargs)
-        return super(VagrantDriver, self).deploy_node(**kwargs)
+        task = kwargs["deploy"]
+        max_tries = kwargs.get("max_tries", 3)
+        ssh_timeout = kwargs.get("ssh_timeout", 10)
+        timeout = kwargs.get("timeout", SSH_CONNECT_TIMEOUT)
+
+        node = self.create_node(**kwargs)
+        ssh_config = self._vagrant_ssh_config(node.name)
+
+        try:
+            _, ip_addresses = self.wait_until_running(
+                nodes=[node],
+                wait_period=3,
+                timeout=kwargs.get("timeout", NODE_ONLINE_WAIT_TIMEOUT),
+                ssh_interface=ssh_config["host"])[0]
+
+            self.log.info("Running deployment script on '%s' ..", node.name)
+            self._connect_and_run_deployment_script(
+                task=task,
+                node=node,
+                ssh_hostname=ip_addresses[0],
+                ssh_port=ssh_config["port"],
+                ssh_username=ssh_config["user"],
+                ssh_password=None,
+                ssh_key_file=ssh_config["key"],
+                ssh_timeout=ssh_timeout,
+                timeout=timeout,
+                max_tries=max_tries)
+            self.log.info(".. Finished deployment script on '%s' ..",
+                          node.name)
+        except Exception as exc:
+            raise DeploymentError(node=node, original_exception=exc,
+                                  driver=self)
+        return node
 
     def detach_volume(self, volume):
         """Detaches a volume from a node.
@@ -460,7 +529,7 @@ class VagrantDriver(base.NodeDriver):
                            n.state == NodeState.RUNNING)]
             self.log.debug("wait_until_running(): Running nodes: %s", running)
             if len(running) == len(uuids):
-                host = self._vagrant_ssh_config()["host"]
+                host = self._vagrant_ssh_config(running[0].name)["host"]
                 ret = list(zip(running, itertools.repeat([host])))
                 self.log.debug("wait_until_running(): Returning %s", ret)
                 return ret
@@ -623,9 +692,9 @@ class VagrantDriver(base.NodeDriver):
         """
         return VagrantCatalogue(self._dot_libcloudvagrant, self)
 
-    def _vagrant_ssh_config(self):
+    def _vagrant_ssh_config(self, node_name):
         ret = {}
-        ssh_config = self._vagrant("ssh-config")
+        ssh_config = self._vagrant("ssh-config", node_name)
         m = re.search("HostName (.+)$", ssh_config, re.MULTILINE)
         if m:
             ret["host"] = m.group(1)

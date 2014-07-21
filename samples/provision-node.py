@@ -69,17 +69,12 @@ def main():
 
     size = driver.list_sizes()[0]
 
-    node = driver.create_node(name="provision-node",
+    LOG.info("Running provisioning script ...")
+    node = driver.deploy_node(name="provision-node",
                               image=precise64,
                               size=size,
-                              ex_networks=[pub])
-
-    LOG.info("Running provisioning script ...")
-    driver.deploy_node(name="test-node",
-                       image=precise64,
-                       size=size,
-                       ex_networks=[pub],
-                       deploy=provision_script)
+                              ex_networks=[pub],
+                              deploy=provision_script)
     LOG.info("Provisioning status: %s", provision_script.exit_status)
     LOG.info("Provisioning output: %s", provision_script.stdout)
 

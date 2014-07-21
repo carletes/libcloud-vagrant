@@ -20,9 +20,11 @@
 
 """Unit tests for deployment."""
 
+import uuid
+
 from libcloud.compute.deployment import ScriptDeployment
 
-from libcloudvagrant.tests import new_driver, sample_network, sample_node
+from libcloudvagrant.tests import new_driver, sample_network
 
 
 __all__ = [
@@ -39,8 +41,7 @@ def test_deploy_without_network():
     """Deployment works for nodes without networks.
 
     """
-    with sample_node() as node:
-        deploy_node(node)
+    deploy_node(networks=[])
 
 
 def test_with_private_network():
@@ -48,8 +49,7 @@ def test_with_private_network():
 
     """
     with sample_network("priv", "172.16.0.0/16", public=False) as net:
-        with sample_node(networks=[net]) as node:
-            deploy_node(node)
+        deploy_node(networks=[net])
 
 
 def test_with_public_network():
@@ -57,20 +57,26 @@ def test_with_public_network():
 
     """
     with sample_network("priv", "172.16.0.0/16", public=True) as net:
-        with sample_node(networks=[net]) as node:
-            deploy_node(node)
+        deploy_node(networks=[net])
 
 
-def deploy_node(node):
+def deploy_node(networks):
     script = ScriptDeployment("""#!/bin/sh
 
     echo "Hello from $(hostname)"
     """)
-
-    n = driver.deploy_node(name=node.name,
-                           image=node.image,
-                           size=node.size,
-                           deploy=script)
-    assert n.name == node.name
-    assert script.exit_status == 0
-    assert script.stdout == "Hello from %s\n" % (node.name,), script.stdout
+    name = uuid.uuid4().hex
+    image = driver.get_image("hashicorp/precise64")
+    node = None
+    try:
+        node = driver.deploy_node(name=name,
+                                  image=image,
+                                  size=driver.list_sizes()[0],
+                                  ex_networks=networks,
+                                  deploy=script)
+        assert node.name == name
+        assert script.exit_status == 0
+        assert script.stdout == "Hello from %s\n" % (node.name,), script.stdout
+    finally:
+        if node is not None:
+            driver.destroy_node(node)
