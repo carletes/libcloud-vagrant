@@ -407,8 +407,10 @@ class VagrantDriver(base.NodeDriver):
         :rtype: ``bool``
 
         """
+        self.log.info("Rebooting node '%s' ..", node.name)
         try:
             self._vagrant("reload --no-provision", node.name)
+            self.log.info(".. Node '%s' rebooted", node.name)
             return True
         except:
             self.log.debug("Cannot reload %s", node.name, exc_info=True)
