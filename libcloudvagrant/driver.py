@@ -112,7 +112,7 @@ class VagrantDriver(base.NodeDriver):
                       volume.name, node.name)
         return True
 
-    def create_node(self, name, size, image, networks=None, **kwargs):
+    def create_node(self, name, size, image, ex_networks=None, **kwargs):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -129,14 +129,16 @@ class VagrantDriver(base.NodeDriver):
 
         Accepts the following non-standard arguments:
 
-        :param networks: The networks to connect this node to.
-        :type networks:  ``list`` of :class:`VagrantNetwork`
+        :param ex_networks: The networks to connect this node to.
+        :type ex_networks:  ``list`` of :class:`VagrantNetwork`
 
         All other arguments are ignored.
 
         """
-        if networks is None:
+        if ex_networks is None:
             networks = []
+        else:
+            networks = ex_networks
 
         self.log.info("Creating node '%s' ..", name)
 

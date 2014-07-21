@@ -93,7 +93,7 @@ class sample_node(object):
         self._node = d.create_node(name=self.name,
                                    size=size,
                                    image=image,
-                                   networks=self.networks)
+                                   ex_networks=self.networks)
         return self._node
 
     def __exit__(self, *exc_info):

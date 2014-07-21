@@ -50,7 +50,7 @@ def main():
     node = driver.create_node(name="single-node",
                               image=precise64,
                               size=size,
-                              networks=[pub])
+                              ex_networks=[pub])
 
     for volume in driver.list_volumes():
         if volume.name == "srv_data":

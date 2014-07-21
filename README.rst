@@ -26,7 +26,7 @@ The following snippet spins up a virtual machine running on your host::
     node = driver.create_node(name="n1",
                               image=driver.get_image("hashicorp/precise64"),
                               size=driver.list_sizes()[0],
-                              networks=[pub])
+                              ex_networks=[pub])
 
     print "Node '%s' running!" % (node.name,)
     print ("Connect to it with 'ssh vagrant@%s' (password: 'vagrant')" %

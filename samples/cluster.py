@@ -49,12 +49,12 @@ def main():
     node1 = driver.create_node(name="cluster-node-1",
                                image=precise64,
                                size=size,
-                               networks=[pub, priv])
+                               ex_networks=[pub, priv])
 
     node2 = driver.create_node(name="cluster-node-2",
                                image=precise64,
                                size=size,
-                               networks=[priv])
+                               ex_networks=[priv])
 
     LOG.info("Node '%s' running!", node1.name)
     LOG.info("Node '%s' running!", node2.name)
