@@ -1,6 +1,13 @@
 Changes in the development version
 ==================================
 
+Backwards-incompatible changes
+------------------------------
+
+* The non-standard parameter ``networks`` in the ``create_node`` driver
+  method has been renamed to ``ex_networks``, in order to signal that
+  it's non-standard.
+
 Backwards-compatible changes
 ----------------------------
 
