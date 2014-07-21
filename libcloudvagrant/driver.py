@@ -331,6 +331,7 @@ class VagrantDriver(base.NodeDriver):
         :rtype: ``bool``
 
         """
+        self.log.info("Destroying node '%s' ..", node.name)
         try:
             with self._catalogue as c:
                 self._vagrant("destroy --force", node.name)
@@ -345,6 +346,7 @@ class VagrantDriver(base.NodeDriver):
                         self.log.debug("destroy_node(): Detaching %s", v)
                         self.detach_volume(v)
                 c.remove_node(node)
+            self.log.info(".. Node '%s' destroyed", node.name)
             return True
         except:
             self.log.warn("Cannot destroy %s", node.name, exc_info=True)
@@ -579,10 +581,12 @@ class VagrantDriver(base.NodeDriver):
         :rtype:  ``Bool``
 
         """
+        self.log.info("Destroying network '%s' ..", network.name)
         try:
             with self._catalogue as c:
                 c.remove_network(network)
                 return True
+            self.log.info(".. Network '%s' destroyed", network.name)
         except:
             self.log.warn("Cannot destroy network %s", network, exc_info=True)
             return False
