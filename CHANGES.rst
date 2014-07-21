@@ -1,6 +1,11 @@
 Changes in the development version
 ==================================
 
+Nothing so far.
+
+Changes in version 0.2.0
+========================
+
 Backwards-incompatible changes
 ------------------------------
 
@@ -16,7 +21,11 @@ Backwards-compatible changes
 
 Bug fixes
 ---------
-* The driver method ``deploy_node()`` did not return the node object.
+
+* The driver method ``deploy_node()`` was badly broken:
+
+  * It did not work if the node had not been created before.
+  * It did not return the node object for the created node.
 
 
 Changes in version 0.1.0
