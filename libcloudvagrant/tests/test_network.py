@@ -33,6 +33,7 @@ __all__ = [
     "test_create_duplicate_netwoks",
     "test_destroy_network",
     "test_exhausted_networks",
+    "test_list_networks",
     "test_overlapping_networks",
     "test_public_network",
     "test_public_and_private_networks",
@@ -98,6 +99,29 @@ def test_exhausted_networks():
         else:
             raise AssertionError("Address %s should not be available" %
                                  (addr,))
+
+
+def test_list_networks():
+    """Networks are listed properly.
+
+    """
+    assert len(driver.ex_list_networks()) == 0
+    with sample_network("net1", cidr="192.168.0.0/24") as net1:
+        networks = driver.ex_list_networks()
+        assert len(networks) == 1
+        assert networks[0] == net1
+
+        with sample_network("net2", cidr="192.168.1.0/24") as net2:
+            networks = driver.ex_list_networks()
+            assert len(networks) == 2
+            assert net1 in networks
+            assert net2 in networks
+
+        networks = driver.ex_list_networks()
+        assert len(networks) == 1
+        assert networks[0] == net1
+
+    assert len(driver.ex_list_networks()) == 0
 
 
 def test_overlapping_networks():

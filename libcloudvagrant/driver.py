@@ -534,6 +534,17 @@ class VagrantDriver(base.NodeDriver):
                           exc_info=True)
             return NodeState.UNKNOWN
 
+    def ex_list_networks(self):
+        """Returns a list of all defined Vagrant networks.
+
+        This is an extension method.
+
+        :rtype: ``list`` of :class:`VagrantNetwork`
+
+        """
+        with self._catalogue as c:
+            return c.get_networks()
+
     def ex_start_node(self, node):
         """Starts a node.
 
