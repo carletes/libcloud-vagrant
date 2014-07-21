@@ -14,6 +14,10 @@ Backwards-compatible changes
 * New driver method ``ex_list_networks()`` which returns a list of
   defined networks.
 
+Bug fixes
+---------
+* The driver method ``deploy_node()`` did not return the node object.
+
 
 Changes in version 0.1.0
 ========================

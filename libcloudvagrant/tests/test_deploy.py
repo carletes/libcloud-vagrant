@@ -67,9 +67,10 @@ def deploy_node(node):
     echo "Hello from $(hostname)"
     """)
 
-    driver.deploy_node(name=node.name,
-                       image=node.image,
-                       size=node.size,
-                       deploy=script)
+    n = driver.deploy_node(name=node.name,
+                           image=node.image,
+                           size=node.size,
+                           deploy=script)
+    assert n.name == node.name
     assert script.exit_status == 0
     assert script.stdout == "Hello from %s\n" % (node.name,), script.stdout

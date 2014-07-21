@@ -223,7 +223,7 @@ class VagrantDriver(base.NodeDriver):
         kwargs["ssh_key"] = ssh_config["key"]
         kwargs["ssh_interface"] = ssh_config["host"]
         self.log.debug("Deploy args: %s", kwargs)
-        super(VagrantDriver, self).deploy_node(**kwargs)
+        return super(VagrantDriver, self).deploy_node(**kwargs)
 
     def detach_volume(self, volume):
         """Detaches a volume from a node.
