@@ -72,6 +72,11 @@ setup(
         "libcloudvagrant": ["ca-bundle.crt"],
         "libcloudvagrant.templates": ["Vagrantfile"],
     },
+    entry_points={
+        "console_scripts": [
+            "libcloud-vagrant = libcloudvagrant.cmd:main",
+        ],
+    },
     install_requires=read_requirements(),
 
     zip_safe=False,

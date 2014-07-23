@@ -52,6 +52,31 @@ Deployment scripts are run through Vagrant's NAT interface, using
 Vagrant's SSH credentials. Therefore they also work for non-networked
 nodes.
 
+``libcloud-vagrant`` includes a command-line tool to do simple
+operations with Vagrant nodes created by Libcloud::
+
+    $ libcloud-vagrant -h
+    usage: libcloud-vagrant [-h] <cmd>
+
+    Manage your Vagrant libcloud environment.
+
+    positional arguments:
+      <cmd>       command to execute
+
+    optional arguments:
+      -h, --help  show this help message and exit
+
+    Available commands:
+
+        destroy
+            Destroys all nodes, networks and volumes in your Vagrant
+            environment.
+
+        screen
+            Opens a screen(1) session to all nodes in your Vagrant
+            environment.
+    $
+
 
 Requirements
 ------------

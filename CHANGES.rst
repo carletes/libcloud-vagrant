@@ -1,7 +1,8 @@
 Changes in the development version
 ==================================
 
-Nothing so far.
+* New command-line tool ``libcloud-vagrant`` to do simple operations
+  with Vagrant nodes created by Libcloud.
 
 Changes in version 0.2.0
 ========================
