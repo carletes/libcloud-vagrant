@@ -177,6 +177,19 @@ class VagrantDriver(base.NodeDriver):
             c.save()  # Explicit save, so that the next command succeeds
             self.ex_start_node(node)
             self.log.info(".. Node '%s' created", name)
+
+            public_networks = filter(lambda n: n.public, networks)
+            self.log.debug("create_node(%s): Public networks: %s",
+                           name, public_networks)
+            if public_networks:
+                node_uuid = c.virtualbox_uuid(node)
+                ifaces = virtualbox.get_host_interfaces(node_uuid)
+                self.log.debug("create_node(%s): Ifaces: %s", name, ifaces)
+                for n, iface in zip(public_networks, ifaces):
+                    self.log.debug("create_node(%s): Iface for '%s': '%s'",
+                                   name, n.name, iface)
+                    n.host_interface = iface
+                    c.update_network(n)
             return node
 
     def create_volume(self, size, name, **kwargs):
@@ -563,7 +576,8 @@ class VagrantDriver(base.NodeDriver):
         self.log.debug("ex_create_network(%s, %s, %s): Entering",
                        name, cidr, public)
         with self._catalogue as c:
-            network = VagrantNetwork(name, cidr, public, allocated=[])
+            network = VagrantNetwork(name, cidr, public,
+                                     allocated=[], host_interface=None)
             c.add_network(network)
             return network
 
@@ -584,6 +598,11 @@ class VagrantDriver(base.NodeDriver):
         self.log.info("Destroying network '%s' ..", network.name)
         try:
             with self._catalogue as c:
+                ifname = network.host_interface
+                self.log.debug("destoy_network(%s): Iface: %s",
+                               network.name, ifname)
+                if ifname is not None:
+                    virtualbox.destroy_host_interface(ifname)
                 c.remove_network(network)
                 return True
             self.log.info(".. Network '%s' destroyed", network.name)

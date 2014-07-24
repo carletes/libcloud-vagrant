@@ -31,7 +31,9 @@ from libcloud.compute.types import NodeState
 __all__ = [
     "attach_volume",
     "create_volume",
+    "destroy_host_interface",
     "detach_volume",
+    "get_host_interfaces",
     "get_node_state",
     "stop_node",
 ]
@@ -60,6 +62,10 @@ def create_volume(path, size):
                       "--filename", path)
 
 
+def destroy_host_interface(ifname):
+    return vboxmanage("hostonlyif remove", ifname)
+
+
 _VOLUME_RE_TEMPL = r'"(.+?)-(\d+)-(\d)"="(%s)"'
 
 
@@ -74,6 +80,20 @@ def detach_volume(node_uuid, volume_path):
                    "--device", device,
                    "--type hdd",
                    "--medium none")
+
+
+_HOST_IFACES_RE = re.compile(r'^hostonlyadapter(\d+)="(.+?)"$')
+
+
+def get_host_interfaces(node_uuid):
+    ret = []
+    frag = vboxmanage("showvminfo", node_uuid, "--details --machinereadable")
+    for line in frag.splitlines():
+        m = _HOST_IFACES_RE.search(line)
+        if m:
+            ret.append((m.group(1), m.group(2)))
+    LOG.debug("get_host_interfaces(%s): %s", node_uuid, ret)
+    return [iface for (_, iface) in sorted(ret)]
 
 
 _NODE_STATE_RE = re.compile(r'VMState="(.+?)"')

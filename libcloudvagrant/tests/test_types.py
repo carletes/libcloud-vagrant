@@ -53,6 +53,7 @@ def test_serializable():
                             "cidr": "10.0.0.0/8",
                             "public": True,
                             "allocated": [],
+                            "host_interface": "vboxnet4",
                         },
                         {
                             "name": "net1",
@@ -62,6 +63,7 @@ def test_serializable():
                                 "10.0.0.1",
                                 "10.0.0.2",
                             ],
+                            "host_interface": None,
                         })
 
 

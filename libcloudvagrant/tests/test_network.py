@@ -23,6 +23,8 @@
 import logging
 import subprocess
 
+import netifaces
+
 from libcloud.common.types import LibcloudError
 
 from libcloudvagrant.tests import new_driver, sample_network, sample_node
@@ -33,6 +35,7 @@ __all__ = [
     "test_create_duplicate_netwoks",
     "test_destroy_network",
     "test_exhausted_networks",
+    "test_host_interface_cleanup",
     "test_list_networks",
     "test_overlapping_networks",
     "test_public_network",
@@ -99,6 +102,25 @@ def test_exhausted_networks():
         else:
             raise AssertionError("Address %s should not be available" %
                                  (addr,))
+
+
+def test_host_interface_cleanup():
+    """Host interfaces are removed when their associated networks are
+    destroyed.
+
+    """
+    assert not any(i.startswith("vboxnet") for i in netifaces.interfaces())
+
+    with sample_network("pub", public=True) as pub:
+        with sample_node(networks=[pub]):
+            iface = pub.host_interface
+            assert iface in netifaces.interfaces()
+        assert iface in netifaces.interfaces()
+    assert iface not in netifaces.interfaces()
+
+    with sample_network("priv") as priv:
+        with sample_node(networks=[priv]):
+            assert priv.host_interface is None
 
 
 def test_list_networks():

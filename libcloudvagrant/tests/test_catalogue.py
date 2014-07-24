@@ -81,12 +81,14 @@ SAMPLE_CATALOGUE = {
             "cidr": "10.0.0.0/8",
             "public": True,
             "allocated": ["10.0.0.1"],
+            "host_interface": "vboxnet2",
         },
         "priv": {
             "name": "priv",
             "cidr": "172.16.0.0/16",
             "public": True,
             "allocated": ["172.16.0.1"],
+            "host_interface": None,
         },
     },
     "volumes": {

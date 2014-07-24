@@ -120,13 +120,14 @@ class VagrantNetwork(Serializable):
 
     log = logging.getLogger("libcloudvagrant")
 
-    def __init__(self, name, cidr, public, allocated):
+    def __init__(self, name, cidr, public, allocated, host_interface):
         self.name = name
         self.cidr = ipaddr.IPNetwork(cidr)
         self.public = public
         self._allocated = set()
         for ip in allocated:
             self._allocate(VagrantAddress(ip, name))
+        self.host_interface = host_interface
 
     @property
     def addresses(self):
@@ -212,6 +213,7 @@ class VagrantNetwork(Serializable):
             "cidr": str(self.cidr),
             "public": self.public,
             "allocated": sorted([str(ip.address) for ip in self._allocated]),
+            "host_interface": self.host_interface,
         }
 
     def __contains__(self, other):
