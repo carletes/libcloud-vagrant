@@ -4,6 +4,13 @@ Changes in the development version
 * New command-line tool ``libcloud-vagrant`` to do simple operations
   with Vagrant nodes created by Libcloud.
 
+* Unit tests use now a free 24-bit network in the 192.168/16 range,
+  instead of using hard-coded ones.
+
+* The host network interfaces of public networks are destroyed when the
+  Vagrant network objects are destroyed.
+
+
 Changes in version 0.2.0
 ========================
 
