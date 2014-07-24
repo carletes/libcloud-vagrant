@@ -77,7 +77,7 @@ def test_destroy_network():
     """Networks in use may not be destroyed.
 
     """
-    with sample_network("net1", cidr="192.168.0.0/24") as net1:
+    with sample_network("net1") as net1:
         with sample_node(networks=[net1]):
             assert not driver.ex_destroy_network(net1)
 
@@ -106,12 +106,12 @@ def test_list_networks():
 
     """
     assert len(driver.ex_list_networks()) == 0
-    with sample_network("net1", cidr="192.168.0.0/24") as net1:
+    with sample_network("net1") as net1:
         networks = driver.ex_list_networks()
         assert len(networks) == 1
         assert networks[0] == net1
 
-        with sample_network("net2", cidr="192.168.1.0/24") as net2:
+        with sample_network("net2") as net2:
             networks = driver.ex_list_networks()
             assert len(networks) == 2
             assert net1 in networks
@@ -147,7 +147,7 @@ def test_overlapping_networks():
 
 
 def test_public_network():
-    with sample_network("public", cidr="192.168.0.0/24", public=True) as pub:
+    with sample_network("public", public=True) as pub:
         with sample_node(networks=[pub]) as n:
             assert len(n.public_ips) == 1
             addr = n.public_ips[0]
@@ -161,9 +161,9 @@ def test_public_and_private_networks():
     not.
 
     """
-    pub = sample_network("public", cidr="192.168.0.0/24", public=True)
-    dmz = sample_network("dmz", cidr="192.168.1.0/24")
-    lan = sample_network("lan", cidr="192.168.3.0/24")
+    pub = sample_network("public", public=True)
+    dmz = sample_network("dmz")
+    lan = sample_network("lan")
 
     with pub as pub, dmz as dmz, lan as lan:
 

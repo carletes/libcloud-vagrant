@@ -48,7 +48,7 @@ def test_with_private_network():
     """Deployment works for nodes with private networks.
 
     """
-    with sample_network("priv", "172.16.0.0/16", public=False) as net:
+    with sample_network("priv", public=False) as net:
         deploy_node(networks=[net])
 
 
@@ -56,7 +56,7 @@ def test_with_public_network():
     """Deployment works for nodes with public networks.
 
     """
-    with sample_network("priv", "172.16.0.0/16", public=True) as net:
+    with sample_network("priv", public=True) as net:
         deploy_node(networks=[net])
 
 

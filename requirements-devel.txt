@@ -1,6 +1,7 @@
 -r requirements.txt
 
 coverage
+netifaces
 nose
 paramiko
 pep8

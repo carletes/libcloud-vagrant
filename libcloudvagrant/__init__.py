@@ -35,6 +35,15 @@ try:
 except ImportError:
     NOSE_FOUND = False
 
+try:
+    import netifaces
+    NETIFACES_FOUND = True
+
+    # For pyflakes
+    netifaces
+except ImportError:
+    NETIFACES_FOUND = False
+
 from libcloudvagrant.driver import VAGRANT, VagrantDriver, __name__ as pkg_name
 
 
@@ -61,9 +70,15 @@ def test():
     several VMs are created.
 
     """
+    can_run = True
     if not NOSE_FOUND:
-        print >> sys.stderr, "Install 'nose' in order to run the test suite."
-        return False
-    else:
+        print >> sys.stderr, "Install 'nose' in order to run the tests."
+        can_run = False
+
+    if not NETIFACES_FOUND:
+        print >> sys.stderr, "Install 'netifaces' in order to run the tests."
+        can_run = False
+
+    if can_run:
         print "Testing libcloud-vagrant %s" % (__version__,)
         return nose.run(__name__)

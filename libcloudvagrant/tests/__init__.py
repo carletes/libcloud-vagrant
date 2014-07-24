@@ -20,8 +20,12 @@
 
 """Unit test support code."""
 
+import logging
 import tempfile
 import uuid
+
+import ipaddr
+import netifaces
 
 from libcloud.compute import providers
 
@@ -29,6 +33,7 @@ from libcloudvagrant.driver import VAGRANT
 
 
 __all__ = [
+    "available_private_network",
     "new_driver",
     "sample_network",
     "sample_node",
@@ -38,6 +43,30 @@ __all__ = [
 
 import libcloudvagrant.driver
 libcloudvagrant.driver._HOME = tempfile.mkdtemp(prefix="libcloudvagrant-home-")
+
+
+LOG = logging.getLogger("libcloudvagrant")
+
+
+ALLOCATED_NETWORKS = set()
+
+
+def available_private_network():
+    """Returns the first available 24-bit available network in the range of
+    the 256 networks in the block 192.168/16.
+
+    """
+    local_networks = local_rfc1918_networks()
+    base = ipaddr.IPNetwork("192.168.0.0/24")
+    for n in base.supernet(prefixlen_diff=8).iter_subnets(prefixlen_diff=8):
+        if str(n) in ALLOCATED_NETWORKS:
+            continue
+        if any(n.overlaps(localnet) for localnet in local_networks):
+            continue
+        else:
+            ALLOCATED_NETWORKS.add(str(n))
+            return n
+    raise Exception("No available 24-bit network in the block 192.168/16")
 
 
 def new_driver():
@@ -54,9 +83,9 @@ class sample_network(object):
 
     """
 
-    def __init__(self, name, cidr, public=False):
+    def __init__(self, name, cidr=None, public=False):
         self.name = name
-        self.cidr = cidr
+        self.cidr = cidr and cidr or str(available_private_network())
         self.public = public
         self._network = None
 
@@ -67,6 +96,10 @@ class sample_network(object):
 
     def __exit__(self, *exc_info):
         d = new_driver()
+        try:
+            ALLOCATED_NETWORKS.remove(str(self._network))
+        except KeyError:
+            pass
         d.ex_destroy_network(self._network)
         self._network = None
 
@@ -120,3 +153,14 @@ class sample_volume(object):
     def __exit__(self, *exc_info):
         self._volume.destroy()
         self._volume = None
+
+
+def local_rfc1918_networks():
+    ret = []
+    for iface in netifaces.interfaces():
+        addrs = netifaces.ifaddresses(iface).get(netifaces.AF_INET, [])
+        for addr in addrs:
+            addr = ipaddr.IPNetwork("%(addr)s/%(netmask)s" % addr)
+            if addr.is_private:
+                ret.append(addr.masked())
+    return ret
