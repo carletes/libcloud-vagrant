@@ -63,6 +63,45 @@ def destroy(driver):
     return ok
 
 
+def list_objects(driver):
+    """Lists all nodes, networks and volumes in your Vagrant environment.
+
+    """
+    networks = driver.ex_list_networks()
+    if not networks:
+        print "No networks"
+    else:
+        print underlined("Networks")
+        for n in networks:
+            public = (n.public and
+                      "(public, host address: %s)" % (n.host_address,) or "")
+            print "%-10s %-16s %s" % (n.name, n.cidr, public)
+        print
+
+    nodes = driver.list_nodes()
+    if not nodes:
+        print "No nodes"
+    else:
+        print underlined("Nodes")
+        for n in nodes:
+            addrs = ", ".join(n.public_ips + n.private_ips)
+            size = n.size
+            cpus = size.extra.get("cpus", "unknown")
+            print "%-20s %3s CPU %6d RAM  %s" % (n.name, cpus, size.ram, addrs)
+        print
+
+    volumes = driver.list_volumes()
+    if not volumes:
+        print "No volumes"
+    else:
+        print underlined("Volumes")
+        for v in volumes:
+            owner = v.extra.get("attached_to")
+            owner = owner and "(attached to %s)" % (owner,) or ""
+            print "%-20s  %4d GB  %s" % (v.name, v.size, owner)
+        print
+
+
 def screen(driver):
     """Opens a screen(1) session to all nodes in your Vagrant environment.
 
@@ -90,8 +129,13 @@ def screen(driver):
     return rc
 
 
+def underlined(msg, ch="-"):
+    return "\n".join((msg, ch * len(msg)))
+
+
 COMMANDS = {
     "destroy": destroy,
+    "list": list_objects,
     "screen": screen,
 }
 
@@ -122,6 +166,9 @@ def format_help():
 
         destroy
             %(destroy)s
+
+        list
+            %(list)s
 
         screen
             %(screen)s

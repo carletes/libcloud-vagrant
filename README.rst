@@ -72,6 +72,10 @@ operations with Vagrant nodes created by Libcloud::
             Destroys all nodes, networks and volumes in your Vagrant
             environment.
 
+        list
+            Lists all nodes, networks and volumes in your Vagrant
+            environment.
+
         screen
             Opens a screen(1) session to all nodes in your Vagrant
             environment.
