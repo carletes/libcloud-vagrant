@@ -41,12 +41,7 @@ __all__ = [
 ]
 
 
-import libcloudvagrant.driver
-libcloudvagrant.driver._HOME = tempfile.mkdtemp(prefix="libcloudvagrant-home-")
-
-
 LOG = logging.getLogger("libcloudvagrant")
-
 
 ALLOCATED_NETWORKS = set()
 
@@ -73,7 +68,9 @@ def new_driver():
     """Returns a new instance of the Vagrant compute driver.
 
     """
-    return providers.get_driver(VAGRANT)()
+    driver = providers.get_driver(VAGRANT)()
+    driver._home = tempfile.mkdtemp(prefix="libcloudvagrant-home-")
+    return driver
 
 
 class sample_network(object):
@@ -83,24 +80,25 @@ class sample_network(object):
 
     """
 
-    def __init__(self, name, cidr=None, public=False):
+    def __init__(self, driver, name, cidr=None, public=False):
+        self.driver = driver
         self.name = name
         self.cidr = cidr and cidr or str(available_private_network())
         self.public = public
         self._network = None
 
     def __enter__(self):
-        d = new_driver()
-        self._network = d.ex_create_network(self.name, self.cidr, self.public)
+        self._network = self.driver.ex_create_network(self.name,
+                                                      self.cidr,
+                                                      self.public)
         return self._network
 
     def __exit__(self, *exc_info):
-        d = new_driver()
         try:
             ALLOCATED_NETWORKS.remove(str(self._network))
         except KeyError:
             pass
-        d.ex_destroy_network(self._network)
+        self.driver.ex_destroy_network(self._network)
         self._network = None
 
 
@@ -113,20 +111,20 @@ class sample_node(object):
 
     """
 
-    def __init__(self, name=None, networks=None, size=None):
+    def __init__(self, driver, name=None, networks=None, size=None):
+        self.driver = driver
         self.name = name and name or uuid.uuid4().hex
         self.networks = networks and networks or []
         self.size = size
         self._node = None
 
     def __enter__(self):
-        d = new_driver()
-        image = d.get_image("hashicorp/precise64")
-        size = self.size or d.list_sizes()[0]
-        self._node = d.create_node(name=self.name,
-                                   size=size,
-                                   image=image,
-                                   ex_networks=self.networks)
+        image = self.driver.get_image("hashicorp/precise64")
+        size = self.size or self.driver.list_sizes()[0]
+        self._node = self.driver.create_node(name=self.name,
+                                             size=size,
+                                             image=image,
+                                             ex_networks=self.networks)
         return self._node
 
     def __exit__(self, *exc_info):
@@ -141,13 +139,13 @@ class sample_volume(object):
 
     """
 
-    def __init__(self, name=None):
+    def __init__(self, driver, name=None):
+        self.driver = driver
         self.name = name and name or uuid.uuid4().hex
         self._volume = None
 
     def __enter__(self):
-        d = new_driver()
-        self._volume = d.create_volume(size=1, name=self.name)
+        self._volume = self.driver.create_volume(size=1, name=self.name)
         return self._volume
 
     def __exit__(self, *exc_info):

@@ -43,7 +43,7 @@ def test_attach_to_device():
     """
     driver = new_driver()
 
-    with sample_node() as node, sample_volume() as v1, sample_volume() as v2:
+    with sample_node(driver) as node, sample_volume(driver) as v1, sample_volume(driver) as v2:
         driver.ex_stop_node(node)
         assert driver.attach_volume(node, v1, device="/dev/sdc")
         assert not driver.attach_volume(node, v2, device="/dev/sdc")
@@ -57,7 +57,7 @@ def test_attach_volume():
     """
     driver = new_driver()
 
-    with sample_node() as node, sample_volume() as volume:
+    with sample_node(driver) as node, sample_volume(driver) as volume:
         assert volume.attached_to is None
 
         assert node.state == NodeState.RUNNING
@@ -75,7 +75,7 @@ def test_move_volume():
     """
     driver = new_driver()
 
-    with sample_node() as n1, sample_node() as n2, sample_volume() as v:
+    with sample_node(driver) as n1, sample_node(driver) as n2, sample_volume(driver) as v:
         driver.ex_stop_node(n1)
         driver.ex_stop_node(n2)
 
@@ -128,7 +128,7 @@ def test_invalid_device():
     """
     driver = new_driver()
 
-    with sample_node() as node, sample_volume() as volume:
+    with sample_node(driver) as node, sample_volume(driver) as volume:
         driver.ex_stop_node(node)
         assert not driver.attach_volume(node, volume, "/dev/sdB")
         assert driver.attach_volume(node, volume, "/dev/sdb")
@@ -140,7 +140,7 @@ def test_list_volumes():
     """
     driver = new_driver()
 
-    with sample_volume():
+    with sample_volume(driver):
         for volume in driver.list_volumes():
             assert volume.driver == driver
 

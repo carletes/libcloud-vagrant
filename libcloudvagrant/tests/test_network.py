@@ -48,7 +48,9 @@ def test_create_network():
     supported.
 
     """
-    with sample_network("net1", cidr="192.168.0.0/24") as n:
+    driver = new_driver()
+
+    with sample_network(driver, "net1", cidr="192.168.0.0/24") as n:
         assert len(n.addresses) == 254
         for addr in n.addresses:
             assert addr in n
@@ -61,11 +63,11 @@ def test_create_duplicate_netwoks():
     """
     driver = new_driver()
 
-    with sample_network("net1", cidr="192.168.0.0/24") as net1:
+    with sample_network(driver, "net1", cidr="192.168.0.0/24") as net1:
         net2 = driver.ex_create_network(name="net1", cidr="192.168.0.0/24")
         assert net1 == net2
 
-    with sample_network("net1", cidr="192.168.0.0/24") as net1:
+    with sample_network(driver, "net1", cidr="192.168.0.0/24") as net1:
         try:
             driver.ex_create_network(name="net1", cidr="10.0.0.0/8")
         except Exception, exc:
@@ -81,8 +83,8 @@ def test_destroy_network():
     """
     driver = new_driver()
 
-    with sample_network("net1") as net1:
-        with sample_node(networks=[net1]):
+    with sample_network(driver, "net1") as net1:
+        with sample_node(driver, networks=[net1]):
             assert not driver.ex_destroy_network(net1)
 
         assert driver.ex_destroy_network(net1)
@@ -92,7 +94,9 @@ def test_exhausted_networks():
     """Networks cannot be over-allocated.
 
     """
-    with sample_network("net1", cidr="172.16.0.0/30", public=True) as net:
+    driver = new_driver()
+
+    with sample_network(driver, "net1", cidr="172.16.0.0/30", public=True) as net:
         addr = net.allocate_address()
         assert str(addr.address) == "172.16.0.2"
 
@@ -110,17 +114,19 @@ def test_host_interface_cleanup():
     destroyed.
 
     """
+    driver = new_driver()
+
     assert not any(i.startswith("vboxnet") for i in netifaces.interfaces())
 
-    with sample_network("pub", public=True) as pub:
-        with sample_node(networks=[pub]):
+    with sample_network(driver, "pub", public=True) as pub:
+        with sample_node(driver, networks=[pub]):
             iface = pub.host_interface
             assert iface in netifaces.interfaces()
         assert iface in netifaces.interfaces()
     assert iface not in netifaces.interfaces()
 
-    with sample_network("priv") as priv:
-        with sample_node(networks=[priv]):
+    with sample_network(driver, "priv") as priv:
+        with sample_node(driver, networks=[priv]):
             assert priv.host_interface is None
 
 
@@ -131,12 +137,12 @@ def test_list_networks():
     driver = new_driver()
 
     assert len(driver.ex_list_networks()) == 0
-    with sample_network("net1") as net1:
+    with sample_network(driver, "net1") as net1:
         networks = driver.ex_list_networks()
         assert len(networks) == 1
         assert networks[0] == net1
 
-        with sample_network("net2") as net2:
+        with sample_network(driver, "net2") as net2:
             networks = driver.ex_list_networks()
             assert len(networks) == 2
             assert net1 in networks
@@ -155,7 +161,7 @@ def test_overlapping_networks():
     """
     driver = new_driver()
 
-    with sample_network("net1", cidr="192.168.0.0/24"):
+    with sample_network(driver, "net1", cidr="192.168.0.0/24"):
         try:
             driver.ex_create_network(name="net2",
                                      cidr="192.168.0.0/23")
@@ -174,8 +180,10 @@ def test_overlapping_networks():
 
 
 def test_public_network():
-    with sample_network("public", public=True) as pub:
-        with sample_node(networks=[pub]) as n:
+    driver = new_driver()
+
+    with sample_network(driver, "public", public=True) as pub:
+        with sample_node(driver, networks=[pub]) as n:
             assert len(n.public_ips) == 1
             addr = n.public_ips[0]
             assert addr != pub.host_address
@@ -188,15 +196,17 @@ def test_public_and_private_networks():
     not.
 
     """
-    pub = sample_network("public", public=True)
-    dmz = sample_network("dmz")
-    lan = sample_network("lan")
+    driver = new_driver()
+
+    pub = sample_network(driver, "public", public=True)
+    dmz = sample_network(driver, "dmz")
+    lan = sample_network(driver, "lan")
 
     with pub as pub, dmz as dmz, lan as lan:
 
-        nginx = sample_node(networks=[pub, dmz])
-        django = sample_node(networks=[dmz, lan])
-        postgresql = sample_node(networks=[lan])
+        nginx = sample_node(driver, networks=[pub, dmz])
+        django = sample_node(driver, networks=[dmz, lan])
+        postgresql = sample_node(driver, networks=[lan])
 
         with nginx as nginx, django as django, postgresql as postgresql:
             assert len(nginx.public_ips) == 1

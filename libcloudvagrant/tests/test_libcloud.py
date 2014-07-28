@@ -39,12 +39,18 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
     should_list_locations = False
     should_list_volumes = True
 
-    driver = new_driver()
+    def setUp(self):
+        super(ComputeTestCase, self).setUp()
+        self.driver = new_driver()
 
     def test_reboot_node_response(self):
-        with sample_node():
+        with sample_node(self.driver):
             super(ComputeTestCase, self).test_reboot_node_response()
 
+    def test_destroy_node_response(self):
+        with sample_node(self.driver):
+            super(ComputeTestCase, self).test_destroy_node_response()
+
     def test_list_nodes_response(self):
-        with sample_node():
+        with sample_node(self.driver):
             super(ComputeTestCase, self).test_list_nodes_response()

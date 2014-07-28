@@ -39,18 +39,16 @@ def test_num_cpus():
 
     size = driver.list_sizes()[0]
     size.extra["cpus"] = 1
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 1
 
     size.extra["cpus"] = 2
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 2
 
 
 def num_cpus(node):
-    driver = new_driver()
-
-    ssh = driver._vagrant_ssh_config(node.name)
+    ssh = node.driver._vagrant_ssh_config(node.name)
     ssh["opts"] = " ".join([
         "-o 'StrictHostKeyChecking no'",
         "-o 'UserKnownHostsFile /dev/null'",

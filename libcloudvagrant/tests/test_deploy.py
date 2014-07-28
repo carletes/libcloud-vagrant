@@ -38,28 +38,29 @@ def test_deploy_without_network():
     """Deployment works for nodes without networks.
 
     """
-    deploy_node(networks=[])
+    driver = new_driver()
+    deploy_node(driver, networks=[])
 
 
 def test_with_private_network():
     """Deployment works for nodes with private networks.
 
     """
-    with sample_network("priv", public=False) as net:
-        deploy_node(networks=[net])
+    driver = new_driver()
+    with sample_network(driver, "priv", public=False) as net:
+        deploy_node(driver, networks=[net])
 
 
 def test_with_public_network():
     """Deployment works for nodes with public networks.
 
     """
-    with sample_network("priv", public=True) as net:
-        deploy_node(networks=[net])
-
-
-def deploy_node(networks):
     driver = new_driver()
+    with sample_network(driver, "priv", public=True) as net:
+        deploy_node(driver, networks=[net])
 
+
+def deploy_node(driver, networks):
     script = ScriptDeployment("""#!/bin/sh
 
     echo "Hello from $(hostname)"
