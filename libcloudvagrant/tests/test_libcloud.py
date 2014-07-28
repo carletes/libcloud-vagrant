@@ -20,6 +20,7 @@
 
 """Unit tests from ``libcloud``."""
 
+import logging
 import unittest
 
 from libcloud.test import compute
@@ -39,6 +40,8 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
     should_list_locations = False
     should_list_volumes = True
 
+    log = logging.getLogger("libcloudvagrant")
+
     def setUp(self):
         super(ComputeTestCase, self).setUp()
         self.driver = new_driver()
@@ -46,6 +49,18 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
     def test_reboot_node_response(self):
         with sample_node(self.driver):
             super(ComputeTestCase, self).test_reboot_node_response()
+
+    def test_create_node_response(self):
+        # The implementation in the base class leaves the node up. We clean up
+        # here.
+        try:
+            super(ComputeTestCase, self).test_create_node_response()
+        finally:
+            try:
+                node = self.driver.list_nodes()[0]
+                self.driver.destroy_node(node)
+            except:
+                self.log.warn("Cannot remove node", exc_info=True)
 
     def test_destroy_node_response(self):
         with sample_node(self.driver):
