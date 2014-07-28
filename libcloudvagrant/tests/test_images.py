@@ -28,13 +28,12 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_list_images():
     """All Vagrant images have been created by the Vagrant driver.
 
     """
+    driver = new_driver()
+
     driver.get_image("hashicorp/precise64")
     for i in driver.list_images():
         assert driver == i.driver

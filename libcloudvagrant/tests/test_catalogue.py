@@ -34,9 +34,6 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 # XXX Write tests to explore the effects of corrupted internal data, write
 # errors when saving ``catalogue.json`` and ``Vagrantfile``, ...
 
@@ -46,6 +43,8 @@ def test_catalogue_files():
     ``catalogue.json``.
 
     """
+    driver = new_driver()
+
     dname = tempfile.mkdtemp(prefix="tmp-catalogue-")
     # XXX Ensure that things still work if do an ``rmdir(dname)`` here, before
     # entering the context manager.
@@ -112,6 +111,8 @@ def test_objects():
     """Keep track of the canonical JSON representation of the catalogue.
 
     """
+    driver = new_driver()
+
     dname = tempfile.mkdtemp(prefix="tmp-catalogue-")
     with open(os.path.join(dname, "catalogue.json"), "w") as f:
         json.dump(SAMPLE_CATALOGUE, f)

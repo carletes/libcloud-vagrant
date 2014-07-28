@@ -34,9 +34,6 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_deploy_without_network():
     """Deployment works for nodes without networks.
 
@@ -61,6 +58,8 @@ def test_with_public_network():
 
 
 def deploy_node(networks):
+    driver = new_driver()
+
     script = ScriptDeployment("""#!/bin/sh
 
     echo "Hello from $(hostname)"

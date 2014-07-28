@@ -43,9 +43,6 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_create_network():
     """Network objects are opaque. For unit tests, some operations are
     supported.
@@ -62,6 +59,8 @@ def test_create_duplicate_netwoks():
     to those already created.
 
     """
+    driver = new_driver()
+
     with sample_network("net1", cidr="192.168.0.0/24") as net1:
         net2 = driver.ex_create_network(name="net1", cidr="192.168.0.0/24")
         assert net1 == net2
@@ -80,6 +79,8 @@ def test_destroy_network():
     """Networks in use may not be destroyed.
 
     """
+    driver = new_driver()
+
     with sample_network("net1") as net1:
         with sample_node(networks=[net1]):
             assert not driver.ex_destroy_network(net1)
@@ -127,6 +128,8 @@ def test_list_networks():
     """Networks are listed properly.
 
     """
+    driver = new_driver()
+
     assert len(driver.ex_list_networks()) == 0
     with sample_network("net1") as net1:
         networks = driver.ex_list_networks()
@@ -150,6 +153,8 @@ def test_overlapping_networks():
     """Overlapping networks are not supported.
 
     """
+    driver = new_driver()
+
     with sample_network("net1", cidr="192.168.0.0/24"):
         try:
             driver.ex_create_network(name="net2",

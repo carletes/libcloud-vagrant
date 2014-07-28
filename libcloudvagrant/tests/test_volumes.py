@@ -37,13 +37,12 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_attach_to_device():
     """It is possible to attach volumes to specific devices.
 
     """
+    driver = new_driver()
+
     with sample_node() as node, sample_volume() as v1, sample_volume() as v2:
         driver.ex_stop_node(node)
         assert driver.attach_volume(node, v1, device="/dev/sdc")
@@ -56,6 +55,8 @@ def test_attach_volume():
     already-attached volume fails.
 
     """
+    driver = new_driver()
+
     with sample_node() as node, sample_volume() as volume:
         assert volume.attached_to is None
 
@@ -72,6 +73,8 @@ def test_move_volume():
     """Attached volumes may be detached and attached to anothe node.
 
     """
+    driver = new_driver()
+
     with sample_node() as n1, sample_node() as n2, sample_volume() as v:
         driver.ex_stop_node(n1)
         driver.ex_stop_node(n2)
@@ -91,6 +94,8 @@ def test_create_volume():
     """Created volumes are correctly registered.
 
     """
+    driver = new_driver()
+
     test_volume = uuid.uuid4().hex
     assert test_volume not in driver.list_volumes()
 
@@ -105,6 +110,8 @@ def test_destroy_volume():
     """Attached volumes may not be destroyed.
 
     """
+    driver = new_driver()
+
     volume = get_volume("test-volume")
     volume.attached_to = "some-node"
     assert not driver.destroy_volume(volume)
@@ -119,6 +126,8 @@ def test_invalid_device():
     """Volumes may only be attached to ``/dev/sd[a-z]``.
 
     """
+    driver = new_driver()
+
     with sample_node() as node, sample_volume() as volume:
         driver.ex_stop_node(node)
         assert not driver.attach_volume(node, volume, "/dev/sdB")
@@ -129,6 +138,8 @@ def test_list_volumes():
     """Volumes are registered correctly.
 
     """
+    driver = new_driver()
+
     with sample_volume():
         for volume in driver.list_volumes():
             assert volume.driver == driver
@@ -139,6 +150,8 @@ def get_volume(name):
     already exist.
 
     """
+    driver = new_driver()
+
     for v in driver.list_volumes():
         if v.name == name:
             return v

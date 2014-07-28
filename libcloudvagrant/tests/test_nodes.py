@@ -30,13 +30,12 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_create_node():
     """Nodes are created and registered correctly.
 
     """
+    driver = new_driver()
+
     node_name = uuid.uuid4().hex
     assert node_name not in driver.list_images()
 

@@ -30,14 +30,13 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_num_cpus():
     """The Vagrant driver honours the number of CPUs expressed in the nodes'
     size objects.
 
     """
+    driver = new_driver()
+
     size = driver.list_sizes()[0]
     size.extra["cpus"] = 1
     with sample_node(size=size) as node:
@@ -49,6 +48,8 @@ def test_num_cpus():
 
 
 def num_cpus(node):
+    driver = new_driver()
+
     ssh = driver._vagrant_ssh_config(node.name)
     ssh["opts"] = " ".join([
         "-o 'StrictHostKeyChecking no'",

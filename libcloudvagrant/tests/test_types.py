@@ -37,9 +37,6 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_serializable():
     """Serializable types can be converted to and from their dict
     representations.
@@ -148,6 +145,8 @@ def assert_serializable_with_driver(cls, *params):
     representations.
 
     """
+    driver = new_driver()
+
     for p in params:
         obj = cls.from_dict(driver=driver, **p)
         serialized = obj.to_dict()
