@@ -4,8 +4,15 @@ all:
 
 TESTS=${:libcloudvagrant}
 
-# XXX Consider ``--processes=-1``
 check: all
+	nosetests \
+		--detailed-errors \
+		--processes=2 \
+		--process-timeout=1200 \
+		--stop \
+		$(TESTS)
+
+cover: all
 	nosetests \
 		--detailed-errors \
 		--with-coverage \
