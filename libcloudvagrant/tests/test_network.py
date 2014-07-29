@@ -116,12 +116,12 @@ def test_host_interface_cleanup():
     """
     driver = new_driver()
 
-    assert not any(i.startswith("vboxnet") for i in netifaces.interfaces())
-
+    interfaces_before = netifaces.interfaces()
     with sample_network(driver, "pub", public=True) as pub:
         with sample_node(driver, networks=[pub]):
             iface = pub.host_interface
             assert iface in netifaces.interfaces()
+            assert iface not in interfaces_before
         assert iface in netifaces.interfaces()
     assert iface not in netifaces.interfaces()
 
