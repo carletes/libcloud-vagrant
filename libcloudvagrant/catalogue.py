@@ -245,6 +245,12 @@ class VagrantCatalogue(object):
             with open(fname, "w") as f:
                 self.log.debug("Saving catalogue %s: %s", fname, self._objects)
                 json.dump(self._objects, f, indent=2)
+                f.flush()
+                try:
+                    os.fsync(f.fileno())
+                except:
+                    self.log.debug("fsync() failed for %s", fname,
+                                   exc_info=True)
         except:
             self.log.warn("Error creating %s", fname, exc_info=True)
 

@@ -18,6 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import logging
+import os
+
 import jinja2
 
 
@@ -29,8 +32,15 @@ __all__ = [
 loader = jinja2.PackageLoader("libcloudvagrant", "templates")
 env = jinja2.Environment(loader=loader, autoescape=False)
 
+LOG = logging.getLogger("libcloudvagrant")
+
 
 def render(template_name, context, fname):
     t = env.get_template(template_name)
     with open(fname, "wt") as f:
         f.write(t.render(context).encode("utf8"))
+        f.flush()
+        try:
+            os.fsync(f.fileno())
+        except:
+            LOG.debug("fsync() failed for %s", fname, exc_info=True)
