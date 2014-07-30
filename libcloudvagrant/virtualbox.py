@@ -63,7 +63,15 @@ def create_volume(path, size):
 
 
 def destroy_host_interface(ifname):
-    return vboxmanage("hostonlyif remove", ifname)
+    try:
+        return vboxmanage("hostonlyif remove", ifname)
+    except LibcloudError as exc:
+        no_iface = ("The host network interface with the given name "
+                    "could not be found")
+        if no_iface in exc.value:
+            LOG.warn("Cannot destroy interface '%s': Not found", ifname)
+            return
+        raise
 
 
 _VOLUME_RE_TEMPL = r'"(.+?)-(\d+)-(\d)"="(%s)"'
