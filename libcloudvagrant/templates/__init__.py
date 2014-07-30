@@ -19,7 +19,6 @@
 # THE SOFTWARE.
 
 import logging
-import os
 
 import jinja2
 
@@ -39,8 +38,3 @@ def render(template_name, context, fname):
     t = env.get_template(template_name)
     with open(fname, "wt") as f:
         f.write(t.render(context).encode("utf8"))
-        f.flush()
-        try:
-            os.fsync(f.fileno())
-        except:
-            LOG.debug("fsync() failed for %s", fname, exc_info=True)
