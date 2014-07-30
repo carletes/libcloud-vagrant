@@ -495,7 +495,14 @@ class VagrantDriver(base.NodeDriver):
         """
         self.log.info("Rebooting node '%s' ..", node.name)
         try:
-            self._vagrant("reload --no-provision", node.name)
+            # XXX Consider instead:
+            #
+            #    self.ex_stop_node()
+            #    self.ex_start_node()
+            #
+            # (Possible deadlock here?)
+            with GlobalLock("create"):
+                self._vagrant("reload --no-provision", node.name)
             self.log.info(".. Node '%s' rebooted", node.name)
             return True
         except:
