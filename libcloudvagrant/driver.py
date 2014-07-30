@@ -21,12 +21,15 @@
 """Apache Libcloud compute driver implementation for Vagrant."""
 
 import itertools
+import json
 import logging
 import os
 import pwd
 import re
 import subprocess
 import time
+
+import lockfile
 
 from libcloud.common.types import LibcloudError
 from libcloud.compute import base
@@ -345,7 +348,8 @@ class VagrantDriver(base.NodeDriver):
         self.log.info("Destroying node '%s' ..", node.name)
         try:
             with self._catalogue as c:
-                self._vagrant("destroy --force", node.name)
+                with GlobalLock("destroy"):
+                    self._vagrant("destroy --force", node.name)
                 for ip in node._public_ips + node._private_ips:
                     self.log.debug("destroy_node(): Deallocating address %s",
                                    ip)
@@ -649,7 +653,8 @@ class VagrantDriver(base.NodeDriver):
 
         """
         self.log.info("Starting node '%s' ..", node.name)
-        self._vagrant("up --provider virtualbox", node.name)
+        with GlobalLock("create"):
+            self._vagrant("up --provider virtualbox", node.name)
         self.log.info(".. Node '%s' started", node.name)
 
     def ex_stop_node(self, node):
@@ -736,3 +741,55 @@ class VagrantDriver(base.NodeDriver):
         if m:
             ret["key"] = m.group(1)
         return ret
+
+
+class GlobalLock(object):
+
+    log = logging.getLogger("libcloudvagrant")
+
+    def __init__(self, op):
+        if op not in ("create", "destroy"):
+            raise TypeError("Unsupported operation '%s'" % (op,))
+        self._op = op
+        self._lock_status = "/tmp/.libcloud-vagrant.lock"
+        self._update_lock = lockfile.FileLock(self._lock_status)
+
+    def __enter__(self):
+        while not self._acquire():
+            time.sleep(0.1)
+
+    def __exit__(self, *exc_info):
+        try:
+            self._release()
+        except:
+            self.log.warn("Cannot release global lock for %s", self._op,
+                          exc_info=True)
+
+    def _acquire(self):
+        op = self._op
+        other_op = "create" if op == "destroy" else "destroy"
+        with self._update_lock:
+            if not os.access(self._lock_status, os.F_OK):
+                status = {"create": 0, "destroy": 0}
+            else:
+                with open(self._lock_status, "r") as f:
+                    status = json.load(f)
+            self.log.debug("GlobalLock.acquire: Before: %s", status)
+            if status[op] > 0 or status[other_op] == 0:
+                status[op] += 1
+                with open(self._lock_status, "w") as f:
+                    json.dump(status, f)
+                self.log.debug("GlobalLock.acquire: After: %s", status)
+                return True
+            else:
+                return False
+
+    def _release(self):
+        with self._update_lock:
+            with open(self._lock_status, "r") as f:
+                status = json.load(f)
+            self.log.debug("GlobalLock.release: Before: %s", status)
+            status[self._op] -= 1
+            with open(self._lock_status, "w") as f:
+                json.dump(status, f)
+            self.log.debug("GlobalLock.release: After: %s", status)
