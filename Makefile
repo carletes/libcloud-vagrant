@@ -10,6 +10,7 @@ check: all
 		--processes=-1 \
 		--process-timeout=1200 \
 		--stop \
+		--verbose \
 		$(TESTS)
 
 cover: all

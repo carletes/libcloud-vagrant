@@ -781,12 +781,12 @@ class GlobalLock(object):
             else:
                 with open(self._lock_status, "r") as f:
                     status = json.load(f)
-            self.log.debug("GlobalLock.acquire: Before: %s", status)
+            self.log.debug("GlobalLock.acquire(%s): Before: %s", op, status)
             if status[op] > 0 or status[other_op] == 0:
                 status[op] += 1
                 with open(self._lock_status, "w") as f:
                     json.dump(status, f)
-                self.log.debug("GlobalLock.acquire: After: %s", status)
+                self.log.debug("GlobalLock.acquire(%s): After: %s", op, status)
                 return True
             else:
                 return False
@@ -795,8 +795,10 @@ class GlobalLock(object):
         with self._update_lock:
             with open(self._lock_status, "r") as f:
                 status = json.load(f)
-            self.log.debug("GlobalLock.release: Before: %s", status)
+            self.log.debug("GlobalLock.release(%s): Before: %s",
+                           self._op, status)
             status[self._op] -= 1
             with open(self._lock_status, "w") as f:
                 json.dump(status, f)
-            self.log.debug("GlobalLock.release: After: %s", status)
+            self.log.debug("GlobalLock.release(%s): After: %s",
+                           self._op, status)
