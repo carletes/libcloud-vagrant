@@ -7,7 +7,7 @@ TESTS=${:libcloudvagrant}
 check: all
 	nosetests \
 		--detailed-errors \
-		--processes=2 \
+		--processes=-1 \
 		--process-timeout=1200 \
 		--stop \
 		$(TESTS)
