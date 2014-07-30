@@ -687,7 +687,7 @@ class VagrantDriver(base.NodeDriver):
 
         """
         env = dict(os.environ)
-        env["VAGRANT_LOG"] = "info"
+        env["VAGRANT_LOG"] = "debug"
         cmdline = ["vagrant --machine-readable"]
         cmdline.extend(args)
         cmdline = " ".join(str(arg) for arg in cmdline)
