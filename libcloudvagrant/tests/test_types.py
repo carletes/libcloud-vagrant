@@ -75,6 +75,7 @@ def test_serializable_with_driver():
                                     })
     assert_serializable_with_driver(VagrantNode,
                                     {
+                                        "id": "27036b03-13a1-45d6-9030-a3faef699ba9",
                                         "name": "node1",
                                         "public_ips": [],
                                         "private_ips": [],
@@ -86,6 +87,7 @@ def test_serializable_with_driver():
                                         "image": {"name": "ubuntu/trusty64"},
                                     },
                                     {
+                                        "id": "361f2550-bc23-4eca-ad22-49914dd8b530",
                                         "name": "node1",
                                         "public_ips": [
                                             {

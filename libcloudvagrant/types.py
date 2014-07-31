@@ -222,12 +222,12 @@ class VagrantNetwork(Serializable):
 
 class VagrantNode(base.Node, Serializable):
 
-    def __init__(self, name, public_ips, private_ips, size, image, driver):
+    def __init__(self, id, name, public_ips, private_ips, size, image, driver):
         self._public_ips = [VagrantAddress(**p) for p in public_ips]
         self._private_ips = [VagrantAddress(**p) for p in private_ips]
         size = VagrantNodeSize.from_dict(driver=driver, **size)
         image = VagrantImage.from_dict(driver=driver, **image)
-        super(VagrantNode, self).__init__(id=name,
+        super(VagrantNode, self).__init__(id=id,
                                           name=name,
                                           state=NodeState.UNKNOWN,
                                           public_ips=self.public_ips,
@@ -274,6 +274,7 @@ class VagrantNode(base.Node, Serializable):
 
     def to_dict(self):
         return {
+            "id": self.id,
             "name": self.name,
             "public_ips": [
                 {"address": str(ip.address), "network_name": ip.network_name}

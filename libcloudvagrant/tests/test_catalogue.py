@@ -61,6 +61,7 @@ def test_catalogue_files():
 SAMPLE_CATALOGUE = {
     "nodes": {
         "nginx": {
+            "id": "b236a285-4337-4e1a-82be-98ff9f9d31b3",
             "name": "nginx",
             "public_ips": [{"address": "10.0.0.1", "network_name": "pub"}],
             "private_ips": [{"address": "172.16.0.1", "network_name": "priv"}],
