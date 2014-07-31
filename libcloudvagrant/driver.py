@@ -324,8 +324,13 @@ class VagrantDriver(base.NodeDriver):
             return True
         try:
             with self._catalogue as c:
-                node_uuid = c.virtualbox_uuid(node)
-                virtualbox.detach_volume(node_uuid, volume.path)
+                for n in c.get_nodes():
+                    if n.name == node:
+                        virtualbox.detach_volume(n.id, volume.path)
+                        break
+                else:
+                    self.log.warn("Volume '%s' attached to node '%s', "
+                                  "which does not exist", volume.name, node)
                 volume.attached_to = None
                 c.update_volume(volume)
                 return True
