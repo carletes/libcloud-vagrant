@@ -115,8 +115,7 @@ class VagrantDriver(base.NodeDriver):
 
         try:
             with self._catalogue as c:
-                node_uuid = c.virtualbox_uuid(node)
-                virtualbox.attach_volume(node_uuid, volume.path, device)
+                virtualbox.attach_volume(node.id, volume.path, device)
                 volume.attached_to = node.name
                 c.update_volume(volume)
         except:
@@ -187,8 +186,7 @@ class VagrantDriver(base.NodeDriver):
             self.log.debug("create_node(%s): Public networks: %s",
                            name, public_networks)
             if public_networks:
-                node_uuid = c.virtualbox_uuid(node)
-                ifaces = virtualbox.get_host_interfaces(node_uuid)
+                ifaces = virtualbox.get_host_interfaces(node.id)
                 self.log.debug("create_node(%s): Ifaces: %s", name, ifaces)
                 for n, iface in zip(public_networks, ifaces):
                     self.log.debug("create_node(%s): Iface for '%s': '%s'",
@@ -628,7 +626,10 @@ class VagrantDriver(base.NodeDriver):
         """
         try:
             with self._catalogue as c:
-                node_uuid = c.virtualbox_uuid(node)
+                if node.id is None:
+                    node_uuid = c.virtualbox_uuid(node)
+                else:
+                    node_uuid = node.id
                 return virtualbox.get_node_state(node_uuid)
         except:
             self.log.warn("Cannot get node state for '%s'", node.name,
@@ -670,7 +671,10 @@ class VagrantDriver(base.NodeDriver):
         """
         self.log.info("Stopping node '%s' ..", node.name)
         with self._catalogue as c:
-            node_uuid = c.virtualbox_uuid(node)
+            if node.id is None:
+                node_uuid = c.virtualbox_uuid(node)
+            else:
+                node_uuid = node.id
             virtualbox.stop_node(node_uuid)
         self.log.info(".. Node '%s' stopped", node.name)
 
