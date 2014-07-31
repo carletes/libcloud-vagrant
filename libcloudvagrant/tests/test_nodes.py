@@ -45,5 +45,8 @@ def test_create_node():
     node = driver.create_node(node_name, size=size, image=image)
     try:
         assert node in driver.list_nodes()
+
+        with driver._catalogue as c:
+            assert node.id == c.virtualbox_uuid(node)
     finally:
         driver.destroy_node(node)

@@ -166,7 +166,8 @@ class VagrantDriver(base.NodeDriver):
             image = image.to_dict()
             for n in networks:
                 c.update_network(n)
-            node = VagrantNode(name=name,
+            node = VagrantNode(id=None,
+                               name=name,
                                public_ips=public_ips,
                                private_ips=private_ips,
                                driver=self,
@@ -177,6 +178,10 @@ class VagrantDriver(base.NodeDriver):
             c.save()  # Explicit save, so that the next command succeeds
             self.ex_start_node(node)
             self.log.info(".. Node '%s' created", name)
+
+            node.id = c.virtualbox_uuid(node)
+            c.add_node(node)
+            c.save()
 
             public_networks = filter(lambda n: n.public, networks)
             self.log.debug("create_node(%s): Public networks: %s",
