@@ -81,6 +81,12 @@ operations with Vagrant nodes created by Libcloud::
             environment.
     $
 
+``libcloud-vagrant`` is *not* thread- or multiprocess-safe. Interactions
+with Vagrant and with the Virtualbox command-line tools are protected
+with a filesystem-based lock, which (hopefully) serializes things, so
+even if they worked, concurrent operations would not give you much
+benefit.
+
 
 Requirements
 ------------

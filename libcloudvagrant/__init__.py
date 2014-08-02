@@ -59,7 +59,7 @@ security.CA_CERTS_PATH.append(os.path.join(os.path.dirname(__file__),
                                            "ca-bundle.crt"))
 
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
 def test():
