@@ -93,7 +93,7 @@ Requirements
 
 ``libcloud-vagrant`` requires:
 
-* `VirtualBox`_ (tested with version 4.3.12 under 64-bit Linux).
+* `VirtualBox`_ (tested with version 4.3.14 under 64-bit Linux).
 * `Vagrant`_ (tested with version 1.6.3 under 64-bit Linux).
 * Python 2.7.
 
