@@ -700,6 +700,8 @@ class VagrantDriver(base.NodeDriver):
         :rtype:  ``str``.
 
         """
+        env = dict(os.environ)
+        env["VAGRANT_LOG"] = "debug"
         cmdline = ["vagrant --machine-readable"]
         cmdline.extend(args)
         cmdline = " ".join(str(arg) for arg in cmdline)
@@ -707,12 +709,15 @@ class VagrantDriver(base.NodeDriver):
                        cmdline, self._dot_libcloudvagrant)
         p = subprocess.Popen(cmdline, shell=True,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
+                             stderr=subprocess.PIPE,
+                             env=env,
                              cwd=self._dot_libcloudvagrant)
-        stdout, _ = p.communicate()
-        if p.returncode:
-            raise LibcloudError(stdout, driver=self)
+        stdout, stderr = p.communicate()
         self.log.debug(stdout)
+        if p.returncode:
+            self.log.warn("%s (cwd: %s) failed: %s",
+                          cmdline, self._dot_libcloudvagrant, stderr)
+            raise LibcloudError(stdout, driver=self)
         return stdout
 
     @property
