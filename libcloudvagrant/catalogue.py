@@ -29,6 +29,7 @@ import pwd
 import traceback
 
 import ipaddr
+import lockfile
 
 from libcloud.common.types import LibcloudError
 
@@ -59,17 +60,27 @@ class VagrantCatalogue(object):
         self._objects = None
         self._previous_objects = None
         self._save_needed = False
+        self._lock = None
 
     def __enter__(self):
         if not os.access(self.dname, os.F_OK):
             os.mkdir(self.dname)
 
         fname = os.path.join(self.dname, "catalogue.json")
+        self._lock = lockfile.FileLock(fname)
+        self._lock.acquire()
         if os.access(fname, os.R_OK):
-            with open(fname, "rt") as f:
-                self._objects = json.load(f)
-                self.log.debug("Loaded objects: %s",
-                               pprint.pformat(self._objects))
+            try:
+                with open(fname, "rt") as f:
+                    self._objects = json.load(f)
+                    self.log.debug("Loaded objects: %s",
+                                   pprint.pformat(self._objects))
+            except:
+                try:
+                    self._lock.release()
+                except:
+                    pass
+                raise
         else:
             self._objects = {}
             self._save_needed = True
@@ -85,8 +96,11 @@ class VagrantCatalogue(object):
                            "".join(traceback.format_exception(*exc_info)))
             self._objects = self._previous_objects
 
-        if self._save_needed:
-            self.save()
+        try:
+            if self._save_needed:
+                self.save()
+        finally:
+            self._lock.release()
 
         self._objects = self._previous_objects = None
 

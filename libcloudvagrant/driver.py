@@ -234,12 +234,14 @@ class VagrantDriver(base.NodeDriver):
         :rtype: ``bool``
 
         """
-        try:
-            self._vagrant("box remove --force --provider virtualbox", image.id)
-            return True
-        except:
-            self.log.warn("Cannot remove image %s", image, exc_info=True)
-            return False
+        with self.catalogue:
+            try:
+                self._vagrant("box remove --force --provider virtualbox",
+                              image.id)
+                return True
+            except:
+                self.log.warn("Cannot remove image %s", image, exc_info=True)
+                return False
 
     def deploy_node(self, **kwargs):
         """Create a new node, and start deployment.
@@ -500,12 +502,13 @@ class VagrantDriver(base.NodeDriver):
 
         """
         self.log.info("Rebooting node '%s' ..", node.name)
-        try:
-            self._vagrant("reload --no-provision", node.name)
-            self.log.info(".. Node '%s' rebooted", node.name)
-            return True
-        except:
-            self.log.debug("Cannot reload %s", node.name, exc_info=True)
+        with self._catalogue:
+            try:
+                self._vagrant("reload --no-provision", node.name)
+                self.log.info(".. Node '%s' rebooted", node.name)
+                return True
+            except:
+                self.log.debug("Cannot reload %s", node.name, exc_info=True)
 
     def wait_until_running(self, nodes, wait_period=3, timeout=600,
                            ssh_interface="public_ips", force_ipv4=True):
