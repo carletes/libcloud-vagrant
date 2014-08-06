@@ -63,10 +63,6 @@ def main():
         srv_data = compute_driver.create_volume(name="srv_data", size=10)
 
     if srv_data.attached_to is None:
-        assert not srv_data.attach(node)
-
-        # XXX Context manager for this?
-        compute_driver.ex_stop_node(node)
         assert srv_data.attach(node)
         compute_driver.ex_start_node(node)
 

@@ -29,6 +29,7 @@ from libcloud.compute.types import NodeState
 
 
 __all__ = [
+    "allocate_sata_ports",
     "attach_volume",
     "create_volume",
     "destroy_host_interface",
@@ -42,11 +43,23 @@ __all__ = [
 LOG = logging.getLogger("liibcloudvagrant")
 
 
+def allocate_sata_ports(node_uuid):
+    """Allocates all possible SATA ports on a node, so that SATA devices may
+    be hot-plugged later.
+
+    """
+    max_sata_ports = 30  # According to VirtualBox documentation
+    frag = vboxmanage("showvminfo", node_uuid, "--details --machinereadable")
+    for controller in find_sata_controllers(frag):
+        LOG.debug("Allocating %s SATA ports for controller %s",
+                  max_sata_ports, controller)
+        vboxmanage("storagectl", node_uuid,
+                   "--name", '"%s"' % (controller,),
+                   "--portcount", max_sata_ports)
+
+
 def attach_volume(node_uuid, volume_path, device):
     controller, device, port = find_sata_slot(node_uuid, device)
-    vboxmanage("storagectl", node_uuid,
-               "--name", '"%s"' % (controller,),
-               "--portcount", port + 1)
     vboxmanage("storageattach", node_uuid,
                "--storagectl", '"%s"' % (controller,),
                "--port", port,
