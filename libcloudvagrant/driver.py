@@ -109,10 +109,6 @@ class VagrantDriver(base.NodeDriver):
                           volume.name, volume.attached_to)
             return False
 
-        if node.state not in (NodeState.STOPPED, NodeState.UNKNOWN):
-            self.log.warn("Cannot attach volumes to running nodes")
-            return False
-
         try:
             with self._catalogue as c:
                 virtualbox.attach_volume(node.id, volume.path, device)
@@ -193,6 +189,11 @@ class VagrantDriver(base.NodeDriver):
                                    name, n.name, iface)
                     n.host_interface = iface
                     c.update_network(n)
+
+            self.ex_stop_node(node)
+            virtualbox.allocate_sata_ports(node.id)
+            self.ex_start_node(node)
+
             return node
 
     def create_volume(self, size, name, **kwargs):

@@ -45,25 +45,18 @@ def test_attach_to_device():
 
     """
     with sample_node() as node, sample_volume() as v1, sample_volume() as v2:
-        driver.ex_stop_node(node)
         assert driver.attach_volume(node, v1, device="/dev/sdc")
         assert not driver.attach_volume(node, v2, device="/dev/sdc")
         assert driver.attach_volume(node, v2, device="/dev/sdb")
 
 
 def test_attach_volume():
-    """Volumes may be attached to stopped nodes only. Attaching an
-    already-attached volume fails.
+    """Volumes may be hot-plugged to nodes.
 
     """
     with sample_node() as node, sample_volume() as volume:
-        assert volume.attached_to is None
-
         assert node.state == NodeState.RUNNING
-        assert not driver.attach_volume(node, volume)
-
-        driver.ex_stop_node(node)
-        assert node.state == NodeState.STOPPED
+        assert volume.attached_to is None
         assert driver.attach_volume(node, volume)
         assert volume.attached_to == node.name
 
@@ -73,9 +66,6 @@ def test_move_volume():
 
     """
     with sample_node() as n1, sample_node() as n2, sample_volume() as v:
-        driver.ex_stop_node(n1)
-        driver.ex_stop_node(n2)
-
         assert driver.attach_volume(n1, v)
         assert v.attached_to == n1.name
         assert not driver.attach_volume(n2, v)
@@ -120,7 +110,6 @@ def test_invalid_device():
 
     """
     with sample_node() as node, sample_volume() as volume:
-        driver.ex_stop_node(node)
         assert not driver.attach_volume(node, volume, "/dev/sdB")
         assert driver.attach_volume(node, volume, "/dev/sdb")
 

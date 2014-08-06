@@ -1,7 +1,10 @@
 Changes in the development version
 ==================================
 
-No changes.
+Backwards-compatible changes
+----------------------------
+
+* Volumes may be hot-plugged.
 
 
 Changes in version 0.3.0

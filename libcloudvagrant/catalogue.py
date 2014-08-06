@@ -56,22 +56,20 @@ class VagrantCatalogue(object):
 
     def __init__(self, dname, driver):
         self.dname = dname
+        if not os.access(self.dname, os.F_OK):
+            os.mkdir(self.dname)
         self.driver = driver
         self._objects = None
         self._previous_objects = None
         self._save_needed = False
-        self._lock = None
+        self._lock = lockfile.FileLock(self._catalogue_json)
+        self._unlock_on_exit = not self._lock.i_am_locking()
 
     def __enter__(self):
-        if not os.access(self.dname, os.F_OK):
-            os.mkdir(self.dname)
-
-        fname = os.path.join(self.dname, "catalogue.json")
-        self._lock = lockfile.FileLock(fname)
         self._lock.acquire()
-        if os.access(fname, os.R_OK):
+        if os.access(self._catalogue_json, os.R_OK):
             try:
-                with open(fname, "rt") as f:
+                with open(self._catalogue_json, "rt") as f:
                     self._objects = json.load(f)
                     self.log.debug("Loaded objects: %s",
                                    pprint.pformat(self._objects))
@@ -100,7 +98,8 @@ class VagrantCatalogue(object):
             if self._save_needed:
                 self.save()
         finally:
-            self._lock.release()
+            if self._unlock_on_exit:
+                self._lock.release()
 
         self._objects = self._previous_objects = None
 
@@ -240,7 +239,7 @@ class VagrantCatalogue(object):
             templates.render("Vagrantfile", params, fname)
         except:
             self.log.warn("Error creating %s", fname, exc_info=True)
-        fname = os.path.join(self.dname, "catalogue.json")
+        fname = self._catalogue_json
         try:
             with open(fname, "w") as f:
                 self.log.debug("Saving catalogue %s: %s", fname, self._objects)
@@ -270,3 +269,7 @@ class VagrantCatalogue(object):
     @property
     def _volumes(self):
         return self._objects["volumes"]
+
+    @property
+    def _catalogue_json(self):
+        return os.path.join(self.dname, "catalogue.json")

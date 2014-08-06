@@ -60,12 +60,7 @@ def main():
         srv_data = driver.create_volume(name="srv_data", size=10)
 
     if srv_data.attached_to is None:
-        assert not srv_data.attach(node)
-
-        # XXX Context manager for this?
-        driver.ex_stop_node(node)
         assert srv_data.attach(node)
-        driver.ex_start_node(node)
 
     LOG.info("Node '%s' running!", node.name)
     LOG.info("Log in with 'ssh vagrant@%s' (password: 'vagrant')",
