@@ -26,7 +26,7 @@ VirtualBox nodes, networks and volumes.
 import os
 import sys
 
-from libcloud.compute import providers
+from libcloud.compute import providers as compute_providers
 from libcloud import security
 
 try:
@@ -44,20 +44,20 @@ try:
 except ImportError:
     NETIFACES_FOUND = False
 
-from libcloudvagrant.compute.driver import (
-    VAGRANT,
-    VagrantDriver,
-    __name__ as pkg_name,
-)
+from libcloudvagrant.common.types import VAGRANT
+from libcloudvagrant.compute import driver as compute_driver
 
 
 __all__ = [
     "__version__",
+    "VAGRANT",
     "test",
 ]
 
 
-providers.set_driver(VAGRANT, pkg_name, VagrantDriver.__name__)
+compute_providers.set_driver(VAGRANT,
+                             compute_driver.__name__,
+                             compute_driver.VagrantDriver.__name__)
 
 security.CA_CERTS_PATH.append(os.path.join(os.path.dirname(__file__),
                                            "common",

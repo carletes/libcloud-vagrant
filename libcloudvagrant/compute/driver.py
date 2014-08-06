@@ -35,6 +35,7 @@ from libcloud.compute.types import DeploymentError, NodeState
 from libcloudvagrant.common import virtualbox
 from libcloudvagrant.common.catalogue import VagrantCatalogue
 from libcloudvagrant.common.types import (
+    VAGRANT,
     VagrantImage,
     VagrantNetwork,
     VagrantNode,
@@ -44,12 +45,9 @@ from libcloudvagrant.common.types import (
 
 
 __all__ = [
-    "VAGRANT",
     "VagrantDriver",
 ]
 
-
-VAGRANT = "vagrant"
 
 _HOME = pwd.getpwuid(os.getuid()).pw_dir
 

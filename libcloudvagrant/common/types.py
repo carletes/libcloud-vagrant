@@ -30,6 +30,7 @@ from libcloud.compute.types import NodeState
 
 
 __all__ = [
+    "VAGRANT",
     "VagrantAddress",
     "VagrantImage",
     "VagrantNetwork",
@@ -37,6 +38,10 @@ __all__ = [
     "VagrantNodeSize",
     "VagrantVolume",
 ]
+
+
+# Common type string for the compute and networking prividers.
+VAGRANT = "vagrant"
 
 
 class Serializable(object):
