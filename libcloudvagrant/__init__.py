@@ -18,8 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""A compute provider for Apache Libcloud which uses Vagrant to manage
-VirtualBox nodes, networks and volumes.
+"""A compute and networking provider for Apache Libcloud which uses Vagrant to
+manage VirtualBox nodes, networks and volumes.
 
 """
 

@@ -19,6 +19,6 @@
 # THE SOFTWARE.
 
 """A compute provider for Apache Libcloud which uses Vagrant to manage
-VirtualBox nodes, networks and volumes.
+VirtualBox nodes, and volumes.
 
 """
