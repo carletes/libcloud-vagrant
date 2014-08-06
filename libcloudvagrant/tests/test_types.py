@@ -21,7 +21,7 @@
 """Unit tests for data types."""
 
 from libcloudvagrant.tests import new_driver
-from libcloudvagrant.types import (
+from libcloudvagrant.common.types import (
     VagrantAddress,
     VagrantImage,
     VagrantNetwork,

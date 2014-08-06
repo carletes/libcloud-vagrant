@@ -33,8 +33,8 @@ import lockfile
 
 from libcloud.common.types import LibcloudError
 
-from libcloudvagrant import templates
-from libcloudvagrant.types import (
+from libcloudvagrant.common import templates
+from libcloudvagrant.common.types import (
     VagrantAddress,
     VagrantNetwork,
     VagrantNode,

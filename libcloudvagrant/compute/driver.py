@@ -32,9 +32,9 @@ from libcloud.common.types import LibcloudError
 from libcloud.compute import base
 from libcloud.compute.types import DeploymentError, NodeState
 
-from libcloudvagrant import virtualbox
-from libcloudvagrant.catalogue import VagrantCatalogue
-from libcloudvagrant.types import (
+from libcloudvagrant.common import virtualbox
+from libcloudvagrant.common.catalogue import VagrantCatalogue
+from libcloudvagrant.common.types import (
     VagrantImage,
     VagrantNetwork,
     VagrantNode,

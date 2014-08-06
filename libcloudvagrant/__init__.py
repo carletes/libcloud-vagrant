@@ -44,7 +44,11 @@ try:
 except ImportError:
     NETIFACES_FOUND = False
 
-from libcloudvagrant.driver import VAGRANT, VagrantDriver, __name__ as pkg_name
+from libcloudvagrant.compute.driver import (
+    VAGRANT,
+    VagrantDriver,
+    __name__ as pkg_name,
+)
 
 
 __all__ = [
@@ -56,6 +60,7 @@ __all__ = [
 providers.set_driver(VAGRANT, pkg_name, VagrantDriver.__name__)
 
 security.CA_CERTS_PATH.append(os.path.join(os.path.dirname(__file__),
+                                           "common",
                                            "ca-bundle.crt"))
 
 

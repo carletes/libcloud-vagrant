@@ -29,7 +29,7 @@ import netifaces
 
 from libcloud.compute import providers
 
-from libcloudvagrant.driver import VAGRANT
+from libcloudvagrant import VAGRANT
 
 
 __all__ = [
@@ -41,8 +41,9 @@ __all__ = [
 ]
 
 
-import libcloudvagrant.driver
-libcloudvagrant.driver._HOME = tempfile.mkdtemp(prefix="libcloudvagrant-home-")
+import libcloudvagrant.compute.driver
+libcloudvagrant.compute.driver._HOME = \
+        tempfile.mkdtemp(prefix="libcloudvagrant-home-")
 
 
 LOG = logging.getLogger("libcloudvagrant")

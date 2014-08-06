@@ -69,12 +69,12 @@ setup(
     },
     packages=find_packages(),
     package_data={
-        "libcloudvagrant": ["ca-bundle.crt"],
-        "libcloudvagrant.templates": ["Vagrantfile"],
+        "libcloudvagrant.common": ["ca-bundle.crt"],
+        "libcloudvagrant.common.templates": ["Vagrantfile"],
     },
     entry_points={
         "console_scripts": [
-            "libcloud-vagrant = libcloudvagrant.cmd:main",
+            "libcloud-vagrant = libcloudvagrant.common.cmd:main",
         ],
     },
     install_requires=read_requirements(),

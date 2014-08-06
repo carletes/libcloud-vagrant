@@ -24,7 +24,7 @@ import os
 import json
 import tempfile
 
-from libcloudvagrant.driver import VagrantCatalogue
+from libcloudvagrant.compute.driver import VagrantCatalogue
 from libcloudvagrant.tests import new_driver
 
 
