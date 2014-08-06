@@ -1,4 +1,4 @@
 Jinja2
-apache-libcloud
+-e git+https://github.com/carletes/libcloud@base_networking_api#egg=libcloud
 ipaddr
 lockfile
