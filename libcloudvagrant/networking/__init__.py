@@ -18,45 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Data types common to all Vagrant drivers."""
+"""A networking provider for Apache Libcloud which uses Vagrant to manage
+VirtualBox networks.
 
-__all__ = [
-    "VAGRANT",
-    "Serializable",
-]
-
-
-# Common type string for the compute and networking providers.
-VAGRANT = "vagrant"
-
-
-class Serializable(object):
-
-    """Objects with dict represantations, suitable for JSON or YAML
-    serialization.
-
-    """
-
-    @classmethod
-    def from_dict(cls, **params):
-        """Builds an instance based on its dict representation.
-
-        """
-        return cls(**params)
-
-    def to_dict(self):
-        """Returns this object's dict representation/
-
-        """
-        raise NotImplementedError()
-
-    def __eq__(self, other):
-        try:
-            return self.to_dict() == other.to_dict()
-        except AttributeError:
-            return False
-
-    def __repr__(self):
-        cls = self.__class__.__name__
-        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
-        return "%s(%s)" % (cls, " ".join(fields))
+"""

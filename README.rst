@@ -1,8 +1,9 @@
-libcloud-vagrant - A Vagrant compute provider for Apache Libcloud
-=================================================================
+libcloud-vagrant - A Vagrant provider for Apache Libcloud
+=========================================================
 
-``libcloud-vagrant`` is a compute provider for `Apache Libcloud`_ which uses
-`Vagrant`_ to create `VirtualBox`_ nodes.
+``libcloud-vagrant`` is a compute and networking provider for
+`Apache Libcloud`_ which uses `Vagrant`_ to create `VirtualBox`_ nodes volumes
+and networks.
 
 With ``libcloud-vagrant`` installed, you could prototype a small cluster on
 your laptop, for instance, and then deploy it later on to Amazon, Rackspace,
@@ -16,7 +17,7 @@ The following snippet spins up a virtual machine running on your host::
 
     from libcloud.compute.providers import get_driver
 
-    from libcloudvagrant.driver import VAGRANT
+    from libcloudvagrant import VAGRANT
 
 
     driver = get_driver(VAGRANT)()

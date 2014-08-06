@@ -37,7 +37,6 @@ from libcloudvagrant.common.catalogue import VagrantCatalogue
 from libcloudvagrant.common.types import (
     VAGRANT,
     VagrantImage,
-    VagrantNetwork,
     VagrantNode,
     VagrantNodeSize,
     VagrantVolume,
@@ -563,62 +562,6 @@ class VagrantDriver(base.NodeDriver):
         raise LibcloudError(value='Timed out after %s seconds' % (timeout,),
                             driver=self)
 
-    def ex_create_network(self, name, cidr, public=False):
-        """Creates a Vagrant network.
-
-        This is an extension method.
-
-        :param name: Name of the network
-        :type name:  ``str``
-
-        :param cidr: Address and netmask of the network
-        :type cidr:  ``str``
-
-        :param public: Whether this is a public or a private network (default:
-                       private network)
-        :type public"  ``Bool``
-
-        :return: A Vagrant network object
-        :rtype:  :class:`VagrantNetwork`
-
-        """
-        self.log.debug("ex_create_network(%s, %s, %s): Entering",
-                       name, cidr, public)
-        with self._catalogue as c:
-            network = VagrantNetwork(name, cidr, public,
-                                     allocated=[], host_interface=None)
-            c.add_network(network)
-            return network
-
-    def ex_destroy_network(self, network):
-        """Destroys a Vagrant network object.
-
-        Networks with addresses in use by nodes cannot be destroyed.
-
-        This is an extension method.
-
-        :param network: The Vagrant network to destroy
-        :type network:  :class:`VagrantNetwork`
-
-        :return: ``True`` on success, ``False`` otherwise
-        :rtype:  ``Bool``
-
-        """
-        self.log.info("Destroying network '%s' ..", network.name)
-        try:
-            with self._catalogue as c:
-                ifname = network.host_interface
-                self.log.debug("destoy_network(%s): Iface: %s",
-                               network.name, ifname)
-                if ifname is not None:
-                    virtualbox.destroy_host_interface(ifname)
-                c.remove_network(network)
-                return True
-            self.log.info(".. Network '%s' destroyed", network.name)
-        except:
-            self.log.warn("Cannot destroy network %s", network, exc_info=True)
-            return False
-
     def ex_get_node_state(self, node):
         """Returns the state of the given node.
 
@@ -641,17 +584,6 @@ class VagrantDriver(base.NodeDriver):
             self.log.warn("Cannot get node state for '%s'", node.name,
                           exc_info=True)
             return NodeState.UNKNOWN
-
-    def ex_list_networks(self):
-        """Returns a list of all defined Vagrant networks.
-
-        This is an extension method.
-
-        :rtype: ``list`` of :class:`VagrantNetwork`
-
-        """
-        with self._catalogue as c:
-            return c.get_networks()
 
     def ex_start_node(self, node):
         """Starts a node.

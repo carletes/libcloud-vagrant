@@ -24,48 +24,51 @@ import logging
 import os
 import sys
 
-from libcloud.compute.providers import get_driver
+from libcloud.compute import providers as compute_providers
+from libcloud.networking import providers as network_providers
+from libcloud.networking.base import Network, Subnet
 
-from libcloudvagrant.driver import VAGRANT
+from libcloudvagrant import VAGRANT
 
 
-cls = get_driver(VAGRANT)
-driver = cls()
+compute_driver = compute_providers.get_driver(VAGRANT)()
+network_driver = network_providers.get_driver(VAGRANT)()
 
 LOG = logging.getLogger(os.path.basename(__file__))
 
 
 def main():
-    pub = driver.ex_create_network(name="pub",
-                                   cidr=os.environ.get("LIBCLOUD_NETWORK",
-                                                       "172.16.0.0/16"),
-                                   public=True)
+    pub = network_driver.create_network(Network(name="pub",
+                                                extra={"public": True}))
+    cidr = os.environ.get("LIBCLOUD_NETWORK", "172.16.0.0/16")
+    pub.create_subnets([Subnet(cidr=cidr)])
+    node_ip = network_driver.create_floating_ip(pub)
 
-    precise64 = driver.get_image("hashicorp/precise64")
+    precise64 = compute_driver.get_image("hashicorp/precise64")
 
-    size = driver.list_sizes()[0]
+    size = compute_driver.list_sizes()[0]
     size.ram = 1024
     size.extra["cpus"] = 2
 
-    node = driver.create_node(name="single-node",
-                              image=precise64,
-                              size=size,
-                              ex_networks=[pub])
+    node = compute_driver.create_node(name="single-node",
+                                      image=precise64,
+                                      size=size)
+    network_driver.attach_floating_ip_to_node(node, node_ip)
 
-    for volume in driver.list_volumes():
+    for volume in compute_driver.list_volumes():
         if volume.name == "srv_data":
             srv_data = volume
             break
     else:
-        srv_data = driver.create_volume(name="srv_data", size=10)
+        srv_data = compute_driver.create_volume(name="srv_data", size=10)
 
     if srv_data.attached_to is None:
         assert not srv_data.attach(node)
 
         # XXX Context manager for this?
-        driver.ex_stop_node(node)
+        compute_driver.ex_stop_node(node)
         assert srv_data.attach(node)
-        driver.ex_start_node(node)
+        compute_driver.ex_start_node(node)
 
     LOG.info("Node '%s' running!", node.name)
     LOG.info("Log in with 'ssh vagrant@%s' (password: 'vagrant')",
