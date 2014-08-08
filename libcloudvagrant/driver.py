@@ -404,7 +404,7 @@ class VagrantDriver(base.NodeDriver):
             c.remove_volume(volume)
             try:
                 os.unlink(volume.path)
-            except IOError:
+            except OSError:
                 self.log.warn("Cannot unlink %s", volume.path, exc_info=True)
         return True
 
