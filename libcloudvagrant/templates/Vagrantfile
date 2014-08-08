@@ -5,6 +5,8 @@
 
 Vagrant.configure("2") do |config|
 
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
   {% for n in nodes %}
   config.vm.define "{{ n.name }}" do |n|
     n.vm.hostname = "{{ n.name }}"

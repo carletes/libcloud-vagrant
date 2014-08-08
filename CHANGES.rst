@@ -6,6 +6,9 @@ Backwards-compatible changes
 
 * Volumes may be hot-plugged.
 
+* Virtualbox shared folders are disabled, in order to make Vagrant boxes
+  resemble more closely nodes created by other providers.
+
 
 Changes in version 0.3.0
 ========================
