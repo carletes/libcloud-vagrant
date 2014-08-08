@@ -30,10 +30,10 @@ from libcloud.compute import providers
 from libcloud import security
 
 try:
-    import nose
-    NOSE_FOUND = True
+    import pytest
+    PYTEST_FOUND = True
 except ImportError:
-    NOSE_FOUND = False
+    PYTEST_FOUND = False
 
 try:
     import netifaces
@@ -71,8 +71,8 @@ def test():
 
     """
     can_run = True
-    if not NOSE_FOUND:
-        print >> sys.stderr, "Install 'nose' in order to run the tests."
+    if not PYTEST_FOUND:
+        print >> sys.stderr, "Install 'pytest' in order to run the tests."
         can_run = False
 
     if not NETIFACES_FOUND:
@@ -81,4 +81,4 @@ def test():
 
     if can_run:
         print "Testing libcloud-vagrant %s" % (__version__,)
-        return nose.run(__name__)
+        return pytest.main([__name__])

@@ -23,7 +23,7 @@
 import uuid
 
 from libcloud.compute.types import NodeState
-from libcloudvagrant.tests import new_driver, sample_node, sample_volume
+from libcloudvagrant.tests import sample_node, sample_volume
 
 
 __all__ = [
@@ -32,52 +32,47 @@ __all__ = [
     "test_create_volume",
     "test_destroy_volume",
     "test_invalid_device",
-    "test_list_volumes",
     "test_move_volume",
 ]
 
 
-driver = new_driver()
-
-
-def test_attach_to_device():
+def test_attach_to_device(driver, node):
     """It is possible to attach volumes to specific devices.
 
     """
-    with sample_node() as node, sample_volume() as v1, sample_volume() as v2:
+    with sample_volume() as v1, sample_volume() as v2:
         assert driver.attach_volume(node, v1, device="/dev/sdc")
         assert not driver.attach_volume(node, v2, device="/dev/sdc")
         assert driver.attach_volume(node, v2, device="/dev/sdb")
 
 
-def test_attach_volume():
+def test_attach_volume(driver, node, volume):
     """Volumes may be hot-plugged to nodes.
 
     """
-    with sample_node() as node, sample_volume() as volume:
-        assert node.state == NodeState.RUNNING
-        assert volume.attached_to is None
-        assert driver.attach_volume(node, volume)
-        assert volume.attached_to == node.name
+    assert node.state == NodeState.RUNNING
+    assert volume.attached_to is None
+    assert driver.attach_volume(node, volume)
+    assert volume.attached_to == node.name
 
 
-def test_move_volume():
+def test_move_volume(driver, volume):
     """Attached volumes may be detached and attached to anothe node.
 
     """
-    with sample_node() as n1, sample_node() as n2, sample_volume() as v:
-        assert driver.attach_volume(n1, v)
-        assert v.attached_to == n1.name
-        assert not driver.attach_volume(n2, v)
+    with sample_node() as n1, sample_node() as n2:
+        assert driver.attach_volume(n1, volume)
+        assert volume.attached_to == n1.name
+        assert not driver.attach_volume(n2, volume)
 
-        assert driver.detach_volume(v)
-        assert v.attached_to is None
-        assert driver.attach_volume(n2, v)
-        assert v.attached_to == n2.name
-        assert not driver.attach_volume(n1, v)
+        assert driver.detach_volume(volume)
+        assert volume.attached_to is None
+        assert driver.attach_volume(n2, volume)
+        assert volume.attached_to == n2.name
+        assert not driver.attach_volume(n1, volume)
 
 
-def test_create_volume():
+def test_create_volume(driver):
     """Created volumes are correctly registered.
 
     """
@@ -91,39 +86,27 @@ def test_create_volume():
     assert volume in driver.list_volumes()
 
 
-def test_destroy_volume():
+def test_destroy_volume(driver, volume):
     """Attached volumes may not be destroyed.
 
     """
-    volume = get_volume("test-volume")
     volume.attached_to = "some-node"
     assert not driver.destroy_volume(volume)
 
-    volume = get_volume("test-volume")
     volume.attached_to = None
     assert driver.destroy_volume(volume)
     assert volume not in driver.list_volumes()
 
 
-def test_invalid_device():
+def test_invalid_device(driver, node, volume):
     """Volumes may only be attached to ``/dev/sd[a-z]``.
 
     """
-    with sample_node() as node, sample_volume() as volume:
-        assert not driver.attach_volume(node, volume, "/dev/sdB")
-        assert driver.attach_volume(node, volume, "/dev/sdb")
+    assert not driver.attach_volume(node, volume, "/dev/sdB")
+    assert driver.attach_volume(node, volume, "/dev/sdb")
 
 
-def test_list_volumes():
-    """Volumes are registered correctly.
-
-    """
-    with sample_volume():
-        for volume in driver.list_volumes():
-            assert volume.driver == driver
-
-
-def get_volume(name):
+def get_volume(driver, name):
     """Returns the specified volume, creating a 1 GB volume if it does not
     already exist.
 

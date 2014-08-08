@@ -20,18 +20,13 @@
 
 """Unit tests for images."""
 
-from libcloudvagrant.tests import new_driver
-
 
 __all__ = [
     "test_list_images",
 ]
 
 
-driver = new_driver()
-
-
-def test_list_images():
+def test_list_images(driver):
     """All Vagrant images have been created by the Vagrant driver.
 
     """

@@ -22,18 +22,13 @@
 
 import uuid
 
-from libcloudvagrant.tests import new_driver, sample_node
-
 
 __all__ = [
     "test_create_node",
 ]
 
 
-driver = new_driver()
-
-
-def test_create_node():
+def test_create_node(driver):
     """Nodes are created and registered correctly.
 
     """
@@ -52,14 +47,13 @@ def test_create_node():
         driver.destroy_node(node)
 
 
-def test_ssh():
+def test_ssh(node):
     """The extension propery ``ssh_client`` implements an SSH client to the
     node.
 
     """
-    with sample_node() as node:
-        with node.ex_ssh_client as ssh:
-            stdout, stderr, rc = ssh.run("hostname")
-            assert rc == 0
-            assert stdout.strip() == node.name
-            assert not stderr
+    with node.ex_ssh_client as ssh:
+        stdout, stderr, rc = ssh.run("hostname")
+        assert rc == 0
+        assert stdout.strip() == node.name
+        assert not stderr

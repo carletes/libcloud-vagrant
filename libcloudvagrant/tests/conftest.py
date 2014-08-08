@@ -18,35 +18,53 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Unit tests for Vagrant-specific extensions."""
+"""py.text fixtures"""
 
-from libcloudvagrant.tests import sample_node
+import uuid
+
+import pytest
+
+from libcloudvagrant.tests import new_driver
 
 
 __all__ = [
-    "test_num_cpus",
+    "driver",
+    "node",
+    "volume",
 ]
 
 
-def test_num_cpus(driver):
-    """The Vagrant driver honours the number of CPUs expressed in the nodes'
-    size objects.
+@pytest.fixture
+def driver():
+    """Return a new driver instance, backed by a temporary directory.
 
     """
-    size = driver.list_sizes()[0]
-    size.extra["cpus"] = 1
-    with sample_node(size=size) as node:
-        assert num_cpus(node) == 1
-
-    size.extra["cpus"] = 2
-    with sample_node(size=size) as node:
-        assert num_cpus(node) == 2
+    return new_driver()
 
 
-def num_cpus(node):
-    count = "cat /proc/cpuinfo | grep processor | wc -l"
-    with node.ex_ssh_client as ssh:
-        stdout, stderr, rc = ssh.run(count)
-        if rc:
-            raise Exception(stderr)
-        return int(stdout.strip())
+@pytest.yield_fixture
+def node():
+    """Return an ephemeral Ubuntu 12.04 node.
+
+    """
+    d = new_driver()
+    node = d.create_node(name=uuid.uuid4().hex,
+                         size=d.list_sizes()[0],
+                         image=d.get_image("hashicorp/precise64"))
+    try:
+        yield node
+    finally:
+        node.destroy()
+
+
+@pytest.yield_fixture
+def volume():
+    """Return an ephemeral 1 GB volume.
+
+    """
+    d = new_driver()
+    volume = d.create_volume(name=uuid.uuid4().hex, size=1)
+    try:
+        yield volume
+    finally:
+        volume.destroy()

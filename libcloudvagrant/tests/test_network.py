@@ -25,9 +25,11 @@ import subprocess
 
 import netifaces
 
+from pytest import raises
+
 from libcloud.common.types import LibcloudError
 
-from libcloudvagrant.tests import new_driver, sample_network, sample_node
+from libcloudvagrant.tests import sample_network, sample_node
 
 
 __all__ = [
@@ -43,9 +45,6 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 def test_create_network():
     """Network objects are opaque. For unit tests, some operations are
     supported.
@@ -57,7 +56,7 @@ def test_create_network():
             assert addr in n
 
 
-def test_create_duplicate_netwoks():
+def test_create_duplicate_netwoks(driver):
     """Networks with the same name may be created, as long as they are equal
     to those already created.
 
@@ -67,16 +66,12 @@ def test_create_duplicate_netwoks():
         assert net1 == net2
 
     with sample_network("net1", cidr="192.168.0.0/24") as net1:
-        try:
+        with raises(LibcloudError) as exc:
             driver.ex_create_network(name="net1", cidr="10.0.0.0/8")
-        except Exception, exc:
-            assert exc.value == "Network 'net1' already defined"
-        else:
-            raise AssertionError("Non-equal duplicate networks "
-                                 "cannot be created")
+        assert exc.value.value == "Network 'net1' already defined"
 
 
-def test_destroy_network():
+def test_destroy_network(driver):
     """Networks in use may not be destroyed.
 
     """
@@ -95,13 +90,9 @@ def test_exhausted_networks():
         addr = net.allocate_address()
         assert str(addr.address) == "172.16.0.2"
 
-        try:
+        with raises(LibcloudError) as exc:
             addr = net.allocate_address()
-        except LibcloudError, exc:
-            assert exc.value == "No more free addresses in 172.16.0.0/30"
-        else:
-            raise AssertionError("Address %s should not be available" %
-                                 (addr,))
+        assert exc.value.value == "No more free addresses in 172.16.0.0/30"
 
 
 def test_host_interface_cleanup():
@@ -123,7 +114,7 @@ def test_host_interface_cleanup():
             assert priv.host_interface is None
 
 
-def test_list_networks():
+def test_list_networks(driver):
     """Networks are listed properly.
 
     """
@@ -146,26 +137,20 @@ def test_list_networks():
     assert len(driver.ex_list_networks()) == 0
 
 
-def test_overlapping_networks():
+def test_overlapping_networks(driver):
     """Overlapping networks are not supported.
 
     """
     with sample_network("net1", cidr="192.168.0.0/24"):
-        try:
+        with raises(LibcloudError) as exc:
             driver.ex_create_network(name="net2",
                                      cidr="192.168.0.0/23")
-        except Exception, exc:
-            assert exc.value == "Network 'net2' overlaps with 'net1'"
-        else:
-            raise AssertionError("Overlapping networks are not supported")
+        assert exc.value.value == "Network 'net2' overlaps with 'net1'"
 
-        try:
+        with raises(LibcloudError) as exc:
             driver.ex_create_network(name="net2",
                                      cidr="192.168.0.0/25")
-        except Exception, exc:
-            assert exc.value == "Network 'net2' overlaps with 'net1'"
-        else:
-            raise AssertionError("Overlapping networks are not supported")
+        assert exc.value.value == "Network 'net2' overlaps with 'net1'"
 
 
 def test_public_network():

@@ -22,10 +22,8 @@
 
 import os
 import json
-import tempfile
 
 from libcloudvagrant.driver import VagrantCatalogue
-from libcloudvagrant.tests import new_driver
 
 
 __all__ = [
@@ -34,19 +32,16 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
 # XXX Write tests to explore the effects of corrupted internal data, write
 # errors when saving ``catalogue.json`` and ``Vagrantfile``, ...
 
 
-def test_catalogue_files():
+def test_catalogue_files(tmpdir, driver):
     """Vagrant contexts create both a ``VagrantFile`` and a
     ``catalogue.json``.
 
     """
-    dname = tempfile.mkdtemp(prefix="tmp-catalogue-")
+    dname = tmpdir.strpath
     # XXX Ensure that things still work if do an ``rmdir(dname)`` here, before
     # entering the context manager.
     with VagrantCatalogue(dname, driver):
@@ -109,11 +104,11 @@ SAMPLE_CATALOGUE = {
 }
 
 
-def test_objects():
+def test_objects(tmpdir, driver):
     """Keep track of the canonical JSON representation of the catalogue.
 
     """
-    dname = tempfile.mkdtemp(prefix="tmp-catalogue-")
+    dname = tmpdir.strpath
     with open(os.path.join(dname, "catalogue.json"), "w") as f:
         json.dump(SAMPLE_CATALOGUE, f)
 

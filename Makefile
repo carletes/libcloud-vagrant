@@ -6,15 +6,8 @@ TESTS=${:libcloudvagrant}
 
 # XXX Consider ``--processes=-1``
 check: all
-	nosetests \
-		--detailed-errors \
-		--with-coverage \
-		--cover-branches \
-		--cover-erase \
-		--cover-html \
-		--cover-inclusive \
-		--cover-package=libcloudvagrant \
-		--cover-tests \
+	py.test \
+		--showlocals \
 		$(TESTS)
 
 lint: all

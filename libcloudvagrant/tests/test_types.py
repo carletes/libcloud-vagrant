@@ -20,7 +20,6 @@
 
 """Unit tests for data types."""
 
-from libcloudvagrant.tests import new_driver
 from libcloudvagrant.types import (
     VagrantAddress,
     VagrantImage,
@@ -35,9 +34,6 @@ __all__ = [
     "test_serializable",
     "test_serializable_with_driver",
 ]
-
-
-driver = new_driver()
 
 
 def test_serializable():
@@ -67,16 +63,18 @@ def test_serializable():
                         })
 
 
-def test_serializable_with_driver():
+def test_serializable_with_driver(driver):
     """Serializable types can be converted to and from their dict
     representations.
 
     """
-    assert_serializable_with_driver(VagrantImage,
+    assert_serializable_with_driver(driver,
+                                    VagrantImage,
                                     {
                                         "name": "ubuntu/trusty64",
                                     })
-    assert_serializable_with_driver(VagrantNode,
+    assert_serializable_with_driver(driver,
+                                    VagrantNode,
                                     {
                                         "id": "27036b03-13a1-45d6-9030-a3faef699ba9",
                                         "name": "node1",
@@ -111,13 +109,15 @@ def test_serializable_with_driver():
                                         },
                                         "image": {"name": "ubuntu/trusty64"},
                                     })
-    assert_serializable_with_driver(VagrantNodeSize,
+    assert_serializable_with_driver(driver,
+                                    VagrantNodeSize,
                                     {
                                         "name": "default",
                                         "ram": 2048,
                                         "cpus": 2,
                                     })
-    assert_serializable_with_driver(VagrantVolume,
+    assert_serializable_with_driver(driver,
+                                    VagrantVolume,
                                     {
                                         "name": "test-volume",
                                         "size": 42,
@@ -145,7 +145,7 @@ def assert_serializable(cls, *params):
         assert recreated == obj
 
 
-def assert_serializable_with_driver(cls, *params):
+def assert_serializable_with_driver(driver, cls, *params):
     """Serializable types can be converted to and from their dict
     representations.
 
