@@ -20,6 +20,7 @@
 
 """Unit tests from ``libcloud``."""
 
+import itertools
 import logging
 import unittest
 
@@ -44,17 +45,16 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
 
     log = logging.getLogger("libcloudvagrant")
 
-    def test_create_node_response(self):
-        # The implementation in the base class leaves the node up. We clean up
-        # here.
-        try:
-            super(ComputeTestCase, self).test_create_node_response()
-        finally:
+    def tearDown(self):
+        # Clean up after each test, in case any test leaves resources
+        # allocated
+        super(ComputeTestCase, self).tearDown()
+        d = self.driver
+        for obj in itertools.chain(d.list_nodes(), d.list_volumes()):
             try:
-                node = self.driver.list_nodes()[0]
-                self.driver.destroy_node(node)
+                obj.destroy()
             except:
-                self.log.warn("Cannot remove node", exc_info=True)
+                self.log.warn("Cannot destroy %s", obj, exc_info=True)
 
     def test_destroy_node_response(self):
         with sample_node():
