@@ -28,6 +28,16 @@ import re
 import subprocess
 import time
 
+from contextlib import contextmanager
+
+try:
+    import paramiko
+    _ = paramiko  # For pyflakes
+except ImportError:
+    from libcloud.compute.ssh import ShellOutSSHClient as SSHClient
+else:
+    from libcloud.compute.ssh import ParamikoSSHClient as SSHClient
+
 from libcloud.common.types import LibcloudError
 from libcloud.compute import base
 from libcloud.compute.types import DeploymentError, NodeState
@@ -656,6 +666,19 @@ class VagrantDriver(base.NodeDriver):
         with self._catalogue as c:
             return c.get_networks()
 
+    def ex_ssh_client(self, node):
+        """Returns a context manager implementing an SSH client to the given
+        node.
+
+        This is an extension method.
+
+        """
+        config = self._vagrant_ssh_config(node.name)
+        return ssh_client(hostname=config["host"],
+                          port=config["port"],
+                          username=config["user"],
+                          key_files=[config["key"]])
+
     def ex_start_node(self, node):
         """Starts a node.
 
@@ -754,3 +777,18 @@ class VagrantDriver(base.NodeDriver):
         if m:
             ret["key"] = m.group(1)
         return ret
+
+
+@contextmanager
+def ssh_client(**kwargs):
+    """Context manager that returns an SSH client. The SSH connection is
+    opened before entering, and closed before leaving.
+
+    """
+    client = SSHClient(**kwargs)
+    if not client.connect():
+        raise Exception("Cannot create SSH connection with %s" % (client,))
+    try:
+        yield client
+    finally:
+        client.close()

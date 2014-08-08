@@ -20,8 +20,6 @@
 
 """Unit tests for Vagrant-specific extensions."""
 
-import subprocess
-
 from libcloudvagrant.tests import new_driver, sample_node
 
 
@@ -49,19 +47,9 @@ def test_num_cpus():
 
 
 def num_cpus(node):
-    ssh = driver._vagrant_ssh_config(node.name)
-    ssh["opts"] = " ".join([
-        "-o 'StrictHostKeyChecking no'",
-        "-o 'UserKnownHostsFile /dev/null'",
-    ])
-    ssh["cmd"] = "cat /proc/cpuinfo | grep processor | wc -l"
-
-    cmd = "ssh -p %(port)s -i %(key)s %(opts)s %(user)s@%(host)s %(cmd)s" % ssh
-    p = subprocess.Popen(cmd,
-                         shell=True,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    if p.returncode:
-        raise Exception(stderr)
-    return int(stdout.strip())
+    count = "cat /proc/cpuinfo | grep processor | wc -l"
+    with node.ex_ssh_client as ssh:
+        stdout, stderr, rc = ssh.run(count)
+        if rc:
+            raise Exception(stderr)
+        return int(stdout.strip())

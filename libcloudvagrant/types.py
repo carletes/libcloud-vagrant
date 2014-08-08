@@ -292,6 +292,19 @@ class VagrantNode(base.Node, Serializable):
         fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
         return "VagrantNode(%s)" % (" ".join(fields),)
 
+    @property
+    def ex_ssh_client(self):
+        """Returns a context manager implementing an SSH client connected to
+        this node.
+
+        This is an extension attribute.
+
+        The SSH connection to this node will be opened before the flow enters
+        the context, and closed before it leaves.
+
+        """
+        return self.driver.ex_ssh_client(self)
+
 
 class VagrantNodeSize(base.NodeSize, Serializable):
 

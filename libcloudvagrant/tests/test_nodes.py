@@ -22,7 +22,7 @@
 
 import uuid
 
-from libcloudvagrant.tests import new_driver
+from libcloudvagrant.tests import new_driver, sample_node
 
 
 __all__ = [
@@ -50,3 +50,16 @@ def test_create_node():
             assert node.id == c.virtualbox_uuid(node)
     finally:
         driver.destroy_node(node)
+
+
+def test_ssh():
+    """The extension propery ``ssh_client`` implements an SSH client to the
+    node.
+
+    """
+    with sample_node() as node:
+        with node.ex_ssh_client as ssh:
+            stdout, stderr, rc = ssh.run("hostname")
+            assert rc == 0
+            assert stdout.strip() == node.name
+            assert not stderr
