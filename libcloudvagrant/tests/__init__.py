@@ -24,6 +24,8 @@ import logging
 import tempfile
 import uuid
 
+from contextlib import contextmanager
+
 import ipaddr
 import netifaces
 
@@ -76,83 +78,56 @@ def new_driver():
     return providers.get_driver(VAGRANT)()
 
 
-class sample_network(object):
-
+@contextmanager
+def sample_network(name, cidr=None, public=False):
     """Context manager which creates a new network before starting, and
     destroys it after leaving.
 
     """
-
-    def __init__(self, name, cidr=None, public=False):
-        self.name = name
-        self.cidr = cidr and cidr or str(available_private_network())
-        self.public = public
-        self._network = None
-
-    def __enter__(self):
-        d = new_driver()
-        self._network = d.ex_create_network(self.name, self.cidr, self.public)
-        return self._network
-
-    def __exit__(self, *exc_info):
-        d = new_driver()
+    d = new_driver()
+    cidr = cidr or str(available_private_network())
+    network = d.ex_create_network(name, cidr, public)
+    try:
+        yield network
+    finally:
         try:
-            ALLOCATED_NETWORKS.remove(str(self._network))
+            ALLOCATED_NETWORKS.remove(str(network))
         except KeyError:
             pass
-        d.ex_destroy_network(self._network)
-        self._network = None
+        d.ex_destroy_network(network)
 
 
-class sample_node(object):
-
+@contextmanager
+def sample_node(name=None, networks=None, size=None):
     """Context manager which creates a new node before starting, and destroys
     it after leaving.
 
     The node is based on the ``hashicorp/precise64`` Vagrant image.
 
     """
-
-    def __init__(self, name=None, networks=None, size=None):
-        self.name = name and name or uuid.uuid4().hex
-        self.networks = networks and networks or []
-        self.size = size
-        self._node = None
-
-    def __enter__(self):
-        d = new_driver()
-        image = d.get_image("hashicorp/precise64")
-        size = self.size or d.list_sizes()[0]
-        self._node = d.create_node(name=self.name,
-                                   size=size,
-                                   image=image,
-                                   ex_networks=self.networks)
-        return self._node
-
-    def __exit__(self, *exc_info):
-        self._node.destroy()
-        self._node = None
+    d = new_driver()
+    node = d.create_node(name=name or uuid.uuid4().hex,
+                         size=size or d.list_sizes()[0],
+                         image=d.get_image("hashicorp/precise64"),
+                         ex_networks=networks or [])
+    try:
+        yield node
+    finally:
+        node.destroy()
 
 
-class sample_volume(object):
-
+@contextmanager
+def sample_volume(name=None):
     """Context manager which creates a new 1 GB volume before starting, and
     destroys it after leaving.
 
     """
-
-    def __init__(self, name=None):
-        self.name = name and name or uuid.uuid4().hex
-        self._volume = None
-
-    def __enter__(self):
-        d = new_driver()
-        self._volume = d.create_volume(size=1, name=self.name)
-        return self._volume
-
-    def __exit__(self, *exc_info):
-        self._volume.destroy()
-        self._volume = None
+    d = new_driver()
+    volume = d.create_volume(name=name or uuid.uuid4().hex, size=1)
+    try:
+        yield volume
+    finally:
+        volume.destroy()
 
 
 def local_rfc1918_networks():
