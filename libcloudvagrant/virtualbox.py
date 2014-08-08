@@ -171,7 +171,7 @@ def find_sata_controllers(frag):
 
     for c in entries.values():
         ret.setdefault(c["type"], []).append(c["name"])
-    return ret.get("IntelAhci")
+    return ret.get("IntelAhci", [])
 
 
 _DEVICE_RE = re.compile(r"/dev/sd([a-z])")
