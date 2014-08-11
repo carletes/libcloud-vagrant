@@ -29,6 +29,7 @@ from libcloudvagrant.tests import new_driver, sample_network
 
 __all__ = [
     "test_deploy_without_network",
+    "test_http_proxy",
     "test_with_private_network",
     "test_with_public_network",
 ]
@@ -42,6 +43,18 @@ def test_deploy_without_network():
 
     """
     deploy_node(networks=[])
+
+
+def test_http_proxy():
+    """Deploying behind an HTTP proxy works.
+
+    """
+    script = """#!/bin/sh
+    echo "Hello from $(hostname)"
+    wget -O - https://github.com/carletes/libcloud-vagrant
+    """
+    result = deploy_node(script=script)
+    assert ("you could prototype a small cluster" in result)
 
 
 def test_with_private_network():
@@ -60,11 +73,12 @@ def test_with_public_network():
         deploy_node(networks=[net])
 
 
-def deploy_node(networks):
-    script = ScriptDeployment("""#!/bin/sh
+def deploy_node(networks=None, script=None):
+    script = script or """#!/bin/sh
 
     echo "Hello from $(hostname)"
-    """)
+    """
+    script = ScriptDeployment(script)
     name = uuid.uuid4().hex
     image = driver.get_image("hashicorp/precise64")
     node = None
@@ -75,8 +89,10 @@ def deploy_node(networks):
                                   ex_networks=networks,
                                   deploy=script)
         assert node.name == name
-        assert script.exit_status == 0
-        assert script.stdout == "Hello from %s\n" % (node.name,), script.stdout
+        assert script.exit_status == 0, script.stderr
+        expected = "Hello from %s" % (node.name,)
+        assert (expected in script.stdout), script.stdout
+        return script.stdout
     finally:
         if node is not None:
             driver.destroy_node(node)
