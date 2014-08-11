@@ -74,7 +74,6 @@ def deploy_node(driver, networks=None, script=None):
     script = ScriptDeployment(script)
     name = uuid.uuid4().hex
     image = driver.get_image("hashicorp/precise64")
-    node = None
     try:
         node = driver.deploy_node(name=name,
                                   image=image,
@@ -87,5 +86,4 @@ def deploy_node(driver, networks=None, script=None):
         assert (expected in script.stdout), script.stdout
         return script.stdout
     finally:
-        if node is not None:
-            driver.destroy_node(node)
+        driver.destroy_node(node)

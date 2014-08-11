@@ -57,10 +57,7 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
         super(ComputeTestCase, self).tearDown()
         d = self.driver
         for obj in itertools.chain(d.list_nodes(), d.list_volumes()):
-            try:
-                obj.destroy()
-            except:
-                self.log.warn("Cannot destroy %s", obj, exc_info=True)
+            obj.destroy()
 
     def test_destroy_node_response(self):
         with sample_node(self.driver):

@@ -181,7 +181,7 @@ class VagrantDriver(base.NodeDriver):
             self.log.debug("create_node(%s): Created object: %s", name, node)
             c.add_node(node)
             c.save()  # Explicit save, so that the next command succeeds
-            self.ex_start_node(node)
+            self._vagrant("up --provider virtualbox", node.name)
             self.log.info(".. Node '%s' created", name)
 
             node.id = c.virtualbox_uuid(node)
@@ -674,37 +674,6 @@ class VagrantDriver(base.NodeDriver):
                           port=config["port"],
                           username=config["user"],
                           key_files=[config["key"]])
-
-    def ex_start_node(self, node):
-        """Starts a node.
-
-        This is an extension method.
-
-        :param node: The node object
-        :type node:  :class:`VagrantNode`
-
-        """
-        self.log.info("Starting node '%s' ..", node.name)
-        self._vagrant("up --provider virtualbox", node.name)
-        self.log.info(".. Node '%s' started", node.name)
-
-    def ex_stop_node(self, node):
-        """Stops a node.
-
-        This is an extension method.
-
-        :param node: The node object
-        :type node:  :class:`VagrantNode`
-
-        """
-        self.log.info("Stopping node '%s' ..", node.name)
-        with self._catalogue as c:
-            if node.id is None:
-                node_uuid = c.virtualbox_uuid(node)
-            else:
-                node_uuid = node.id
-            virtualbox.stop_node(node_uuid)
-        self.log.info(".. Node '%s' stopped", node.name)
 
     def _vagrant(self, *args):
         """Executes the ``vagrant`` command in machine-readable output format.

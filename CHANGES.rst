@@ -1,6 +1,13 @@
 Changes in the development version
 ==================================
 
+Backwards-incompatible changes
+------------------------------
+
+* Driver methods ``ex_start_node()`` and ``ex_stop_node()`` have been
+  removed.
+
+
 Backwards-compatible changes
 ----------------------------
 
