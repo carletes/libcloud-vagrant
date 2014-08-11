@@ -7,3 +7,4 @@ pep8
 pyflakes
 pylint
 pytest
+pytest-cov

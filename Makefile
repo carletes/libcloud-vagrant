@@ -8,6 +8,9 @@ TESTS=${:libcloudvagrant}
 check: all
 	py.test \
 		--showlocals \
+		--cov libcloudvagrant \
+		--cov-report html \
+		--cov-config .coveragerc \
 		$(TESTS)
 
 lint: all
