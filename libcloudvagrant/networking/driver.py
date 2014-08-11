@@ -56,28 +56,23 @@ class VagrantDriver(NetworkingDriver):
     def __init__(self):
         super(VagrantDriver, self).__init__(key=None)
 
-    def create_network(self, network, subnets=None):
+    def create_network(self, network, subnet=None):
         """Creates a Vagrant network.
 
-        The ``subnets`` parameter is expected to be a list containing one
-        single subnet to attach to this network. A ``ValueError`` will be
-        raised if that's not the case.
+        The ``subnet`` parameter is required. A ``ValueError`` will be raised
+        if it's not given.
 
         :param network: Network object with at least 'name' filled in
         :type network: :class:`Network`
 
-        :param subnets: List containing one single subnet to attach to the
-                        network.
-        :type subnets: ``list`` of :class:`Subnet`
+        :param subnet: Subnet to attach to the network.
+        :type subnet: :class:`Subnet`
 
         """
         self.log.debug("create_network(%s, %s): Entering", network, subnets)
 
-        if not subnets:
+        if subnet is None:
             raise ValueError("No subnet specified")
-        if len(subnets) > 1:
-            raise ValueError("More than one subnet specified")
-        subnet = subnets[0]
 
         with self._catalogue as c:
             public = network.get("extra", {"public": False})["public"]
