@@ -33,27 +33,15 @@ from libcloudvagrant.driver import VAGRANT
 cls = get_driver(VAGRANT)
 driver = cls()
 
-environ = dict(os.environ)
-for k in ("http_proxy", "https_proxy", "no_proxy"):
-    environ[k] = os.environ.get(k, "")
-
 provision_script = ScriptDeployment("""#!/bin/sh
 
 exec 2>&1
 
 set -ex
 
-sudo_run() {
-    sudo env \
-      http_proxy="%(http_proxy)s" \
-      https_proxy="%(https_proxy)s" \
-      no_proxy="%(no_proxy)s"\
-        $*
-}
-
-sudo_run apt-get -y update
-sudo_run apt-get -y install puppet
-""" % environ)
+sudo apt-get -y update
+sudo apt-get -y install puppet
+""")
 
 
 LOG = logging.getLogger(os.path.basename(__file__))

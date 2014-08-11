@@ -28,6 +28,16 @@ import re
 import subprocess
 import time
 
+from contextlib import contextmanager
+
+try:
+    import paramiko
+    _ = paramiko  # For pyflakes
+except ImportError:
+    from libcloud.compute.ssh import ShellOutSSHClient as SSHClient
+else:
+    from libcloud.compute.ssh import ParamikoSSHClient as SSHClient
+
 from libcloud.common.types import LibcloudError
 from libcloud.compute import base
 from libcloud.compute.types import DeploymentError, NodeState
@@ -186,10 +196,6 @@ class VagrantDriver(base.NodeDriver):
                                    name, n.name, iface)
                     n.host_interface = iface
                     c.update_network(n)
-
-            self.ex_stop_node(node)
-            virtualbox.allocate_sata_ports(node.id)
-            self.ex_start_node(node)
 
             return node
 
@@ -391,7 +397,7 @@ class VagrantDriver(base.NodeDriver):
             c.remove_volume(volume)
             try:
                 os.unlink(volume.path)
-            except IOError:
+            except OSError:
                 self.log.warn("Cannot unlink %s", volume.path, exc_info=True)
         return True
 
@@ -684,3 +690,18 @@ class VagrantDriver(base.NodeDriver):
         if m:
             ret["key"] = m.group(1)
         return ret
+
+
+@contextmanager
+def ssh_client(**kwargs):
+    """Context manager that returns an SSH client. The SSH connection is
+    opened before entering, and closed before leaving.
+
+    """
+    client = SSHClient(**kwargs)
+    if not client.connect():
+        raise Exception("Cannot create SSH connection with %s" % (client,))
+    try:
+        yield client
+    finally:
+        client.close()
