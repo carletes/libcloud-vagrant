@@ -104,14 +104,3 @@ def test_invalid_device(driver, node, volume):
     """
     assert not driver.attach_volume(node, volume, "/dev/sdB")
     assert driver.attach_volume(node, volume, "/dev/sdb")
-
-
-def get_volume(driver, name):
-    """Returns the specified volume, creating a 1 GB volume if it does not
-    already exist.
-
-    """
-    for v in driver.list_volumes():
-        if v.name == name:
-            return v
-    return driver.create_volume(size=42, name=name)
