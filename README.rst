@@ -96,6 +96,8 @@ Requirements
 * `VirtualBox`_ (tested with version 4.3.14 under 64-bit Linux).
 * `Vagrant`_ (tested with version 1.6.3 under 64-bit Linux).
 * Python 2.7.
+* If you want to attach storage volumes to nodes, you'll need the
+  `vagrant-libcloud-helper`_ Vagrant plugin.
 
 
 Installation
@@ -117,11 +119,12 @@ wil find there a few scripts to create a single node, to show you how to
 provision it, and a script which creates a two-node cluster.
 
 
-.. _Apache Libcloud:   https://libcloud.apache.org/
-.. _Vagrant:           http://vagrantup.com/
-.. _VirtualBox:        http://virtualbox.org/
-.. _SATA controllers:  http://virtualbox.org/manual/ch05.html#harddiskcontrollers
-.. _VDI disks:         http://virtualbox.org/manual/ch05.html#vdidetails
-.. _host-only:         http://virtualbox.org/manual/ch06.html#network_hostonly
-.. _internal:          http://virtualbox.org/manual/ch06.html#network_internal
-.. _samples:           https://github.com/carletes/libcloud-vagrant/tree/master/samples
+.. _Apache Libcloud:         https://libcloud.apache.org/
+.. _Vagrant:                 http://vagrantup.com/
+.. _VirtualBox:              http://virtualbox.org/
+.. _SATA controllers:        http://virtualbox.org/manual/ch05.html#harddiskcontrollers
+.. _VDI disks:               http://virtualbox.org/manual/ch05.html#vdidetails
+.. _host-only:               http://virtualbox.org/manual/ch06.html#network_hostonly
+.. _internal:                http://virtualbox.org/manual/ch06.html#network_internal
+.. _samples:                 https://github.com/carletes/libcloud-vagrant/tree/master/samples
+.. _vagrant-libcloud-helper: https://github.com/carletes/vagrant-libcloud-helper
