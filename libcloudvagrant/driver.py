@@ -200,10 +200,6 @@ class VagrantDriver(base.NodeDriver):
                     n.host_interface = iface
                     c.update_network(n)
 
-            self.ex_stop_node(node)
-            virtualbox.allocate_sata_ports(node.id)
-            self.ex_start_node(node)
-
             return node
 
     def create_volume(self, size, name, **kwargs):
