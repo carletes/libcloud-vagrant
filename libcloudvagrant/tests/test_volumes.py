@@ -40,7 +40,7 @@ def test_attach_to_device(driver, node):
     """It is possible to attach volumes to specific devices.
 
     """
-    with sample_volume() as v1, sample_volume() as v2:
+    with sample_volume(driver) as v1, sample_volume(driver) as v2:
         assert driver.attach_volume(node, v1, device="/dev/sdc")
         assert not driver.attach_volume(node, v2, device="/dev/sdc")
         assert driver.attach_volume(node, v2, device="/dev/sdb")
@@ -60,7 +60,7 @@ def test_move_volume(driver, volume):
     """Attached volumes may be detached and attached to anothe node.
 
     """
-    with sample_node() as n1, sample_node() as n2:
+    with sample_node(driver) as n1, sample_node(driver) as n2:
         assert driver.attach_volume(n1, volume)
         assert volume.attached_to == n1.name
         assert not driver.attach_volume(n2, volume)

@@ -24,9 +24,11 @@ import itertools
 import logging
 import unittest
 
+import pytest
+
 from libcloud.test import compute
 
-from libcloudvagrant.tests import new_driver, sample_node
+from libcloudvagrant.tests import sample_node
 
 
 __all__ = [
@@ -34,14 +36,18 @@ __all__ = [
 ]
 
 
+@pytest.fixture(scope="class")
+def driver_class(driver, request):
+    request.cls.driver = driver
+
+
+@pytest.mark.usefixtures("driver_class")
 class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
 
     """Tests defined in ``libcloud.test.compute.TestCaseMixin``."""
 
     should_list_locations = False
     should_list_volumes = True
-
-    driver = new_driver()
 
     log = logging.getLogger("libcloudvagrant")
 
@@ -57,13 +63,13 @@ class ComputeTestCase(unittest.TestCase, compute.TestCaseMixin):
                 self.log.warn("Cannot destroy %s", obj, exc_info=True)
 
     def test_destroy_node_response(self):
-        with sample_node():
+        with sample_node(self.driver):
             super(ComputeTestCase, self).test_destroy_node_response()
 
     def test_reboot_node_response(self):
-        with sample_node():
+        with sample_node(self.driver):
             super(ComputeTestCase, self).test_reboot_node_response()
 
     def test_list_nodes_response(self):
-        with sample_node():
+        with sample_node(self.driver):
             super(ComputeTestCase, self).test_list_nodes_response()

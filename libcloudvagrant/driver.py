@@ -61,8 +61,6 @@ __all__ = [
 
 VAGRANT = "vagrant"
 
-_HOME = pwd.getpwuid(os.getuid()).pw_dir
-
 # ``NODE_ONLINE_WAIT_TIMEOUT`` and ``SSH_CONNECT_TIMEOUT`` are needed in our
 # reimplementation of ``deploy_node``,
 #
@@ -92,6 +90,8 @@ class VagrantDriver(base.NodeDriver):
     website = "http://www.vagrantup.com/"
 
     log = logging.getLogger("libcloudvagrant")
+
+    _home = pwd.getpwuid(os.getuid()).pw_dir
 
     def __init__(self):
         super(VagrantDriver, self).__init__(key=None)
@@ -745,7 +745,7 @@ class VagrantDriver(base.NodeDriver):
         """Path to the Vagrant catalogue directory.
 
         """
-        dname = os.path.join(_HOME, ".libcloudvagrant")
+        dname = os.path.join(self._home, ".libcloudvagrant")
         if not os.access(dname, os.F_OK):
             os.mkdir(dname)
         return dname

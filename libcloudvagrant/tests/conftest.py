@@ -20,37 +20,51 @@
 
 """py.text fixtures"""
 
+import tempfile
 import uuid
 
 import pytest
 
-from libcloudvagrant.tests import new_driver
+from libcloud.compute import providers
+
+from libcloudvagrant.driver import VAGRANT
+
+from libcloudvagrant.tests import sample_network
 
 
 __all__ = [
     "driver",
+    "network",
     "node",
+    "private_network",
+    "public_network",
     "volume",
 ]
 
 
-@pytest.fixture
+@pytest.yield_fixture(scope="session")
 def driver():
-    """Return a new driver instance, backed by a temporary directory.
+    """Return a new driver instance, backed by a temporary directory. This
+    driver instance will be used for all unit tests.
 
     """
-    return new_driver()
+    d = providers.get_driver(VAGRANT)()
+    d._home = tempfile.mkdtemp(prefix="libcloudvagrant-home-")
+    try:
+        yield d
+    finally:
+        # XXX Implement cleanup here
+        pass
 
 
 @pytest.yield_fixture
-def node():
+def node(driver):
     """Return an ephemeral Ubuntu 12.04 node.
 
     """
-    d = new_driver()
-    node = d.create_node(name=uuid.uuid4().hex,
-                         size=d.list_sizes()[0],
-                         image=d.get_image("hashicorp/precise64"))
+    node = driver.create_node(name=uuid.uuid4().hex,
+                              size=driver.list_sizes()[0],
+                              image=driver.get_image("hashicorp/precise64"))
     try:
         yield node
     finally:
@@ -58,12 +72,32 @@ def node():
 
 
 @pytest.yield_fixture
-def volume():
+def private_network(driver):
+    """Return an ephemeral private network.
+
+    """
+    with sample_network(driver, public=False) as n:
+        yield n
+
+
+network = private_network
+
+
+@pytest.yield_fixture
+def public_network(driver):
+    """Return an ephemeral private network.
+
+    """
+    with sample_network(driver, public=True) as n:
+        yield n
+
+
+@pytest.yield_fixture
+def volume(driver):
     """Return an ephemeral 1 GB volume.
 
     """
-    d = new_driver()
-    volume = d.create_volume(name=uuid.uuid4().hex, size=1)
+    volume = driver.create_volume(name=uuid.uuid4().hex, size=1)
     try:
         yield volume
     finally:

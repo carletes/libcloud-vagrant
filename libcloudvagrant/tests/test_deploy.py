@@ -24,8 +24,6 @@ import uuid
 
 from libcloud.compute.deployment import ScriptDeployment
 
-from libcloudvagrant.tests import sample_network
-
 
 __all__ = [
     "test_deploy_without_network",
@@ -54,20 +52,18 @@ def test_http_proxy(driver):
     assert ("you could prototype a small cluster" in result)
 
 
-def test_with_private_network(driver):
+def test_with_private_network(driver, private_network):
     """Deployment works for nodes with private networks.
 
     """
-    with sample_network("priv", public=False) as net:
-        deploy_node(driver, networks=[net])
+    deploy_node(driver, networks=[private_network])
 
 
-def test_with_public_network(driver):
+def test_with_public_network(driver, public_network):
     """Deployment works for nodes with public networks.
 
     """
-    with sample_network("priv", public=True) as net:
-        deploy_node(driver, networks=[net])
+    deploy_node(driver, networks=[public_network])
 
 
 def deploy_node(driver, networks=None, script=None):

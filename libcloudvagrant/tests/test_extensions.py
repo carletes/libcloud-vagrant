@@ -35,11 +35,11 @@ def test_num_cpus(driver):
     """
     size = driver.list_sizes()[0]
     size.extra["cpus"] = 1
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 1
 
     size.extra["cpus"] = 2
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 2
 
 

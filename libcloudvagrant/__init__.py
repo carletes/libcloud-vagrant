@@ -62,7 +62,7 @@ security.CA_CERTS_PATH.append(os.path.join(os.path.dirname(__file__),
 __version__ = "0.4.0"
 
 
-def test():
+def test():  # pragma: no cover
     """Runs the tests for ``libcloud-vagrant``.
 
     Requires ``nose`` to be installed. The tests take quite a bit of time to
