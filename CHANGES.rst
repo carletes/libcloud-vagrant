@@ -1,6 +1,12 @@
 Changes in the development version
 ==================================
 
+None so far.
+
+
+Changes in version 0.4.0
+========================
+
 Backwards-incompatible changes
 ------------------------------
 
