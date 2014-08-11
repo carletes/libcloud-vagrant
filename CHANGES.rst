@@ -1,16 +1,34 @@
 Changes in the development version
 ==================================
 
-Backwards-compatible changes
-----------------------------
+None so far.
 
-* Volumes may be hot-plugged.
+
+Changes in version 0.4.0
+========================
+
+Backwards-incompatible changes
+------------------------------
+
+* The Vagrant plugin `vagrant-libcloud-helper`_ is now required for
+  attaching storage volumes to nodes.
 
 * Virtualbox shared folders are disabled, in order to make Vagrant boxes
   resemble more closely nodes created by other providers.
 
+
+Backwards-compatible changes
+----------------------------
+
+* Storage volumes can be hot-plugged (if the host operating system
+  supports it).
+
 * Vagrant node instances have an extension attribute called ``ex_ssh_client``,
   a context manager wrapping an instance of ``libcloud.compute.ssh.SSHClient``.
+
+* The Vagrant plugin `vagrant-proxyconf`_, if available in the host
+  system, is set up in order to allow node deployments behind an HTTP
+  proxy.
 
 
 Changes in version 0.3.0
@@ -71,3 +89,7 @@ Bug fixes
 Changes in version 0.1.0
 ========================
 Initial release.
+
+
+.. _vagrant-libcloud-helper: https://github.com/carletes/vagrant-libcloud-helper
+.. _vagrant-proxyconf:       https://github.com/tmatilai/vagrant-proxyconf

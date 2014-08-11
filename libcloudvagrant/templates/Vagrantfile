@@ -5,6 +5,17 @@
 
 Vagrant.configure("2") do |config|
 
+  if Vagrant.has_plugin?("vagrant-libcloud-helper")
+    config.libcloud_helper.allocate_sata_ports = true
+  end
+
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.http =     ENV.fetch("http_proxy",  ENV.fetch("HTTP_PROXY", nil))
+    config.proxy.https =    ENV.fetch("https_proxy", ENV.fetch("HTTPS_PROXY", nil))
+    config.proxy.ftp =      ENV.fetch("ftp_proxy",   ENV.fetch("FTP_PROXY", nil))
+    config.proxy.no_proxy = ENV.fetch("no_proxy",    ENV.fetch("NO_PROXY", nil))
+  end
+
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   {% for n in nodes %}
