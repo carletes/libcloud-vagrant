@@ -1,7 +1,10 @@
 Changes in the development version
 ==================================
 
-None so far.
+Backwards-compatible changes
+----------------------------
+
+* Switch from ``nose`` to ``py.test`` for the test suite.
 
 
 Changes in version 0.4.0
