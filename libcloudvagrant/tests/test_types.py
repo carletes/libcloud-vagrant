@@ -86,6 +86,7 @@ def test_serializable_with_driver(driver):
                                             "cpus": 3,
                                         },
                                         "image": {"name": "ubuntu/trusty64"},
+                                        "allocate_sata_ports": 30,
                                     },
                                     {
                                         "id": "361f2550-bc23-4eca-ad22-49914dd8b530",
@@ -108,6 +109,7 @@ def test_serializable_with_driver(driver):
                                             "cpus": 2,
                                         },
                                         "image": {"name": "ubuntu/trusty64"},
+                                        "allocate_sata_ports": 30,
                                     })
     assert_serializable_with_driver(driver,
                                     VagrantNodeSize,

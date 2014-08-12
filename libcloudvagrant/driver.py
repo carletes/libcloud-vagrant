@@ -132,7 +132,8 @@ class VagrantDriver(base.NodeDriver):
                       volume.name, node.name)
         return True
 
-    def create_node(self, name, size, image, ex_networks=None, **kwargs):
+    def create_node(self, name, size, image, ex_networks=None,
+                    ex_allocate_sata_ports=30, **kwargs):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -151,6 +152,11 @@ class VagrantDriver(base.NodeDriver):
 
         :param ex_networks: The networks to connect this node to.
         :type ex_networks:  ``list`` of :class:`VagrantNetwork`
+
+        :param ex_allocate_sata_ports: Number of SATA ports to allocate on the
+                                       SATA controller (optional, defaults to
+                                       30)
+        :type ex_allocate_sata_ports: ``int``
 
         All other arguments are ignored.
 
@@ -177,7 +183,8 @@ class VagrantDriver(base.NodeDriver):
                                private_ips=private_ips,
                                driver=self,
                                size=size,
-                               image=image)
+                               image=image,
+                               allocate_sata_ports=ex_allocate_sata_ports)
             self.log.debug("create_node(%s): Created object: %s", name, node)
             c.add_node(node)
             c.save()  # Explicit save, so that the next command succeeds

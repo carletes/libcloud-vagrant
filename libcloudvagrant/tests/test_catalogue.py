@@ -69,6 +69,7 @@ SAMPLE_CATALOGUE = {
             "image": {
                 "name": "ubuntu/trusty64",
             },
+            "allocate_sata_ports": 30,
         },
     },
     "networks": {

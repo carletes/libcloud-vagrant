@@ -20,6 +20,7 @@
 
 """py.text fixtures"""
 
+import logging
 import tempfile
 import uuid
 
@@ -40,6 +41,10 @@ __all__ = [
     "public_network",
     "volume",
 ]
+
+
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s %(name)s %(message)s")
 
 
 @pytest.yield_fixture(scope="session")

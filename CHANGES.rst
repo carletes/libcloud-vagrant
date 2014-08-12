@@ -13,6 +13,10 @@ Backwards-compatible changes
 
 * Switch from ``nose`` to ``py.test`` for the test suite.
 
+* The driver method ``create_node()`` now accepts an optional extension
+  parameter ``ex_allocate_sata_ports``, to select how many SATA ports
+  will be allocated on the first SATA controller.
+
 
 Changes in version 0.4.0
 ========================
