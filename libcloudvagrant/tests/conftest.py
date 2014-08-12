@@ -28,7 +28,7 @@ import pytest
 
 from libcloud.compute import providers
 
-from libcloudvagrant.driver import VAGRANT
+from libcloudvagrant import VAGRANT
 
 from libcloudvagrant.tests import sample_network
 

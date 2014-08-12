@@ -23,7 +23,7 @@
 import os
 import json
 
-from libcloudvagrant.driver import VagrantCatalogue
+from libcloudvagrant.common.catalogue import VagrantCatalogue
 
 
 __all__ = [

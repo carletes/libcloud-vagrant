@@ -20,7 +20,7 @@
 
 """Unit tests for data types."""
 
-from libcloudvagrant.types import (
+from libcloudvagrant.compute.types import (
     VagrantAddress,
     VagrantImage,
     VagrantNetwork,

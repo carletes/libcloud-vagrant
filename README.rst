@@ -16,7 +16,7 @@ The following snippet spins up a virtual machine running on your host::
 
     from libcloud.compute.providers import get_driver
 
-    from libcloudvagrant.driver import VAGRANT
+    from libcloudvagrant import VAGRANT
 
 
     driver = get_driver(VAGRANT)()

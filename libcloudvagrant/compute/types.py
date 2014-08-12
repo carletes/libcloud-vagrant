@@ -28,6 +28,8 @@ from libcloud.common.types import LibcloudError
 from libcloud.compute import base
 from libcloud.compute.types import NodeState
 
+from libcloudvagrant.common.types import Serializable
+
 
 __all__ = [
     "VagrantAddress",
@@ -37,38 +39,6 @@ __all__ = [
     "VagrantNodeSize",
     "VagrantVolume",
 ]
-
-
-class Serializable(object):
-
-    """Objects with dict represantations, suitable for JSON or YAML
-    serialization.
-
-    """
-
-    @classmethod
-    def from_dict(cls, **params):
-        """Builds an instance based on its dict representation.
-
-        """
-        return cls(**params)
-
-    def to_dict(self):
-        """Returns this object's dict representation/
-
-        """
-        raise NotImplementedError()
-
-    def __eq__(self, other):
-        try:
-            return self.to_dict() == other.to_dict()
-        except AttributeError:
-            return False
-
-    def __repr__(self):
-        cls = self.__class__.__name__
-        fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())
-        return "%s(%s)" % (cls, " ".join(fields))
 
 
 class VagrantAddress(Serializable):

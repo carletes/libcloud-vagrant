@@ -4,6 +4,9 @@ Changes in the development version
 Backwards-incompatible changes
 ------------------------------
 
+* The symbol ``VAGRANT`` has been moved from ``libcloudvagrant.driver``
+  to ``libcloudvagrant``.
+
 * The Vagrant plugin `vagrant-libcloud-helper`_ is now required.
 
 * ``libcloud-vagrant`` now checks that all components (Vagrant,

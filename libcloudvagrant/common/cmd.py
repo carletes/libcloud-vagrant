@@ -30,7 +30,7 @@ import textwrap
 
 from libcloud.compute.providers import get_driver
 
-from libcloudvagrant.driver import VAGRANT
+from libcloudvagrant import VAGRANT
 
 
 __all__ = [
