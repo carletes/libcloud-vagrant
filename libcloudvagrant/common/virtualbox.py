@@ -35,7 +35,6 @@ __all__ = [
     "detach_volume",
     "get_host_interfaces",
     "get_node_state",
-    "stop_node",
 ]
 
 
@@ -126,17 +125,10 @@ def get_node_state(node_uuid):
     m = _NODE_STATE_RE.search(frag, re.MULTILINE)
     if m:
         ret = m.group(1)
-    else:
-        ret = None
-
-    LOG.debug("get_node_state(%s): VirtualBox reported %s", node_uuid, ret)
-    ret = _NODE_STATES.get(ret, NodeState.UNKNOWN)
-    LOG.debug("get_node_state(%s): Returning %s", node_uuid, ret)
-    return ret
-
-
-def stop_node(node_uuid):
-    return vboxmanage("controlvm", node_uuid, "poweroff")
+        LOG.debug("get_node_state(%s): VirtualBox reported %s", node_uuid, ret)
+        ret = _NODE_STATES.get(ret, NodeState.UNKNOWN)
+        LOG.debug("get_node_state(%s): Returning %s", node_uuid, ret)
+        return ret
 
 
 _CONTROLLER_RE = re.compile(r'^storagecontroller([a-z]+)(\d+)="(.+)"$')

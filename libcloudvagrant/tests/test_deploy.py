@@ -24,8 +24,6 @@ import uuid
 
 from libcloud.compute.deployment import ScriptDeployment
 
-from libcloudvagrant.tests import new_driver, sample_network
-
 
 __all__ = [
     "test_deploy_without_network",
@@ -35,17 +33,14 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
-def test_deploy_without_network():
+def test_deploy_without_network(driver):
     """Deployment works for nodes without networks.
 
     """
-    deploy_node(networks=[])
+    deploy_node(driver, networks=[])
 
 
-def test_http_proxy():
+def test_http_proxy(driver):
     """Deploying behind an HTTP proxy works.
 
     """
@@ -53,27 +48,25 @@ def test_http_proxy():
     echo "Hello from $(hostname)"
     wget -O - https://github.com/carletes/libcloud-vagrant
     """
-    result = deploy_node(script=script)
+    result = deploy_node(driver, script=script)
     assert ("you could prototype a small cluster" in result)
 
 
-def test_with_private_network():
+def test_with_private_network(driver, private_network):
     """Deployment works for nodes with private networks.
 
     """
-    with sample_network("priv", public=False) as net:
-        deploy_node(networks=[net])
+    deploy_node(driver, networks=[private_network])
 
 
-def test_with_public_network():
+def test_with_public_network(driver, public_network):
     """Deployment works for nodes with public networks.
 
     """
-    with sample_network("priv", public=True) as net:
-        deploy_node(networks=[net])
+    deploy_node(driver, networks=[public_network])
 
 
-def deploy_node(networks=None, script=None):
+def deploy_node(driver, networks=None, script=None):
     script = script or """#!/bin/sh
 
     echo "Hello from $(hostname)"
@@ -81,7 +74,6 @@ def deploy_node(networks=None, script=None):
     script = ScriptDeployment(script)
     name = uuid.uuid4().hex
     image = driver.get_image("hashicorp/precise64")
-    node = None
     try:
         node = driver.deploy_node(name=name,
                                   image=image,
@@ -94,5 +86,4 @@ def deploy_node(networks=None, script=None):
         assert (expected in script.stdout), script.stdout
         return script.stdout
     finally:
-        if node is not None:
-            driver.destroy_node(node)
+        driver.destroy_node(node)

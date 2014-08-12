@@ -20,7 +20,7 @@
 
 """Unit tests for Vagrant-specific extensions."""
 
-from libcloudvagrant.tests import new_driver, sample_node
+from libcloudvagrant.tests import sample_node
 
 
 __all__ = [
@@ -28,21 +28,18 @@ __all__ = [
 ]
 
 
-driver = new_driver()
-
-
-def test_num_cpus():
+def test_num_cpus(driver):
     """The Vagrant driver honours the number of CPUs expressed in the nodes'
     size objects.
 
     """
     size = driver.list_sizes()[0]
     size.extra["cpus"] = 1
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 1
 
     size.extra["cpus"] = 2
-    with sample_node(size=size) as node:
+    with sample_node(driver, size=size) as node:
         assert num_cpus(node) == 2
 
 

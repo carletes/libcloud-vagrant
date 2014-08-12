@@ -1,0 +1,17 @@
+[run]
+branch = True
+
+[report]
+exclude_lines =
+  except ImportError:
+  pragma: no cover
+  raise AssertionError
+  raise NotImplementedError
+
+partial_branches =
+  pragma: no branch
+
+show_missing = True
+
+[html]
+directory = cover

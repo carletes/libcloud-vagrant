@@ -22,18 +22,16 @@
 
 import uuid
 
-from libcloudvagrant.tests import new_driver, sample_node
+from libcloud.compute.types import NodeState
 
 
 __all__ = [
     "test_create_node",
+    "test_node_state",
 ]
 
 
-driver = new_driver()
-
-
-def test_create_node():
+def test_create_node(driver):
     """Nodes are created and registered correctly.
 
     """
@@ -52,14 +50,29 @@ def test_create_node():
         driver.destroy_node(node)
 
 
-def test_ssh():
+def test_node_state(driver):
+    """Node state reflects actual VirtualBox status.
+
+    """
+    node = driver.create_node(name=uuid.uuid4().hex,
+                              image=driver.get_image("hashicorp/precise64"),
+                              size=driver.list_sizes()[0])
+    assert driver.ex_get_node_state(node) == NodeState.RUNNING
+
+    driver.destroy_node(node)
+    assert driver.ex_get_node_state(node) == NodeState.UNKNOWN
+
+    node.id = None
+    assert driver.ex_get_node_state(node) == NodeState.UNKNOWN
+
+
+def test_ssh(node):
     """The extension propery ``ssh_client`` implements an SSH client to the
     node.
 
     """
-    with sample_node() as node:
-        with node.ex_ssh_client as ssh:
-            stdout, stderr, rc = ssh.run("hostname")
-            assert rc == 0
-            assert stdout.strip() == node.name
-            assert not stderr
+    with node.ex_ssh_client as ssh:
+        stdout, stderr, rc = ssh.run("hostname")
+        assert rc == 0
+        assert stdout.strip() == node.name
+        assert not stderr

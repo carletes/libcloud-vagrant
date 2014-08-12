@@ -62,11 +62,13 @@ class VagrantImage(base.NodeImage, Serializable):
 
 class VagrantNode(base.Node, Serializable):
 
-    def __init__(self, id, name, public_ips, private_ips, size, image, driver):
+    def __init__(self, id, name, public_ips, private_ips, size, image,
+                 allocate_sata_ports, driver):
         self._public_ips = [VagrantAddress(**p) for p in public_ips]
         self._private_ips = [VagrantAddress(**p) for p in private_ips]
         size = VagrantNodeSize.from_dict(driver=driver, **size)
         image = VagrantImage.from_dict(driver=driver, **image)
+        self.allocate_sata_ports = allocate_sata_ports
         super(VagrantNode, self).__init__(id=id,
                                           name=name,
                                           state=NodeState.UNKNOWN,
@@ -126,7 +128,13 @@ class VagrantNode(base.Node, Serializable):
             ],
             "size": self.size.to_dict(),
             "image": self.image.to_dict(),
+            "allocate_sata_ports": self.allocate_sata_ports,
         }
+
+    @classmethod
+    def from_dict(cls, **params):
+        params.setdefault("allocate_sata_ports", 30)
+        return cls(**params)
 
     def __repr__(self):
         fields = ("%s=%s" % (k, v) for (k, v) in self.to_dict().items())

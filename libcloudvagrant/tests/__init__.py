@@ -21,7 +21,6 @@
 """Unit test support code."""
 
 import logging
-import tempfile
 import uuid
 
 from contextlib import contextmanager
@@ -29,23 +28,13 @@ from contextlib import contextmanager
 import ipaddr
 import netifaces
 
-from libcloud.compute import providers
-
-from libcloudvagrant import VAGRANT
-
 
 __all__ = [
     "available_private_network",
-    "new_driver",
     "sample_network",
     "sample_node",
     "sample_volume",
 ]
-
-
-import libcloudvagrant.compute.driver
-libcloudvagrant.compute.driver._HOME = \
-        tempfile.mkdtemp(prefix="libcloudvagrant-home-")
 
 
 LOG = logging.getLogger("libcloudvagrant")
@@ -72,22 +61,15 @@ def available_private_network():
     raise Exception("No available 24-bit network in the block 192.168/16")
 
 
-def new_driver():
-    """Returns a new instance of the Vagrant compute driver.
-
-    """
-    return providers.get_driver(VAGRANT)()
-
-
 @contextmanager
-def sample_network(name, cidr=None, public=False):
+def sample_network(driver, name=None, cidr=None, public=False):
     """Context manager which creates a new network before starting, and
     destroys it after leaving.
 
     """
-    d = new_driver()
+    name = name or uuid.uuid4().hex
     cidr = cidr or str(available_private_network())
-    network = d.ex_create_network(name, cidr, public)
+    network = driver.ex_create_network(name, cidr, public)
     try:
         yield network
     finally:
@@ -95,22 +77,21 @@ def sample_network(name, cidr=None, public=False):
             ALLOCATED_NETWORKS.remove(str(network))
         except KeyError:
             pass
-        d.ex_destroy_network(network)
+        driver.ex_destroy_network(network)
 
 
 @contextmanager
-def sample_node(name=None, networks=None, size=None):
+def sample_node(driver, name=None, networks=None, size=None):
     """Context manager which creates a new node before starting, and destroys
     it after leaving.
 
     The node is based on the ``hashicorp/precise64`` Vagrant image.
 
     """
-    d = new_driver()
-    node = d.create_node(name=name or uuid.uuid4().hex,
-                         size=size or d.list_sizes()[0],
-                         image=d.get_image("hashicorp/precise64"),
-                         ex_networks=networks or [])
+    node = driver.create_node(name=name or uuid.uuid4().hex,
+                              size=size or driver.list_sizes()[0],
+                              image=driver.get_image("hashicorp/precise64"),
+                              ex_networks=networks or [])
     try:
         yield node
     finally:
@@ -118,13 +99,12 @@ def sample_node(name=None, networks=None, size=None):
 
 
 @contextmanager
-def sample_volume(name=None):
+def sample_volume(driver, name=None):
     """Context manager which creates a new 1 GB volume before starting, and
     destroys it after leaving.
 
     """
-    d = new_driver()
-    volume = d.create_volume(name=name or uuid.uuid4().hex, size=1)
+    volume = driver.create_volume(name=name or uuid.uuid4().hex, size=1)
     try:
         yield volume
     finally:

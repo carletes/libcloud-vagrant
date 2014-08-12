@@ -1,7 +1,38 @@
 Changes in the development version
 ==================================
 
-None so far.
+Backwards-incompatible changes
+------------------------------
+
+* The symbol ``VAGRANT`` has been moved from ``libcloudvagrant.driver``
+  to ``libcloudvagrant``.
+
+* The Vagrant plugin `vagrant-libcloud-helper`_ is now required.
+
+* ``libcloud-vagrant`` now checks that all components (Vagrant,
+  VirtualBox and required plugins) are present and at the expected
+  version numbers, throwing a ``RuntimeError`` if that's not the case.
+
+* Driver methods ``ex_start_node()`` and ``ex_stop_node()`` have been
+  removed.
+
+
+Backwards-compatible changes
+----------------------------
+
+* Switch from ``nose`` to ``py.test`` for the test suite.
+
+* The driver method ``create_node()`` now accepts an optional extension
+  parameter ``ex_allocate_sata_ports``, to select how many SATA ports
+  will be allocated on the first SATA controller.
+
+
+Bug fixes
+---------
+
+* Destroying nodes with attached disks raised an error when detaching
+  the disk (beacuse the node destruction hapened *before* the disk
+  detach).
 
 
 Changes in version 0.4.0

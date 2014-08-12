@@ -25,7 +25,6 @@ import json
 import logging
 import os
 import pprint
-import pwd
 import traceback
 
 import ipaddr
@@ -34,20 +33,13 @@ import lockfile
 from libcloud.common.types import LibcloudError
 
 from libcloudvagrant.common import templates
-from libcloudvagrant.common.types import (
-    VagrantAddress,
-    VagrantNetwork,
-    VagrantNode,
-    VagrantVolume,
-)
+from libcloudvagrant.compute.types import VagrantNode, VagrantVolume
+from libcloudvagrant.networking.types import VagrantAddress, VagrantNetwork
 
 
 __all__ = [
     "VagrantCatalogue",
 ]
-
-
-_HOME = pwd.getpwuid(os.getuid()).pw_dir
 
 
 class VagrantCatalogue(object):

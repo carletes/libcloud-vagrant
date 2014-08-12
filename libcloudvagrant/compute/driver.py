@@ -44,8 +44,8 @@ from libcloud.compute.types import DeploymentError, NodeState
 
 from libcloudvagrant.common import virtualbox
 from libcloudvagrant.common.catalogue import VagrantCatalogue
-from libcloudvagrant.common.types import (
-    VAGRANT,
+from libcloudvagrant.common.types import VAGRANT
+from libcloudvagrant.compute.types import (
     VagrantImage,
     VagrantNode,
     VagrantNodeSize,
@@ -57,8 +57,6 @@ __all__ = [
     "VagrantDriver",
 ]
 
-
-_HOME = pwd.getpwuid(os.getuid()).pw_dir
 
 # ``NODE_ONLINE_WAIT_TIMEOUT`` and ``SSH_CONNECT_TIMEOUT`` are needed in our
 # reimplementation of ``deploy_node``,
@@ -89,6 +87,8 @@ class VagrantDriver(base.NodeDriver):
     website = "http://www.vagrantup.com/"
 
     log = logging.getLogger("libcloudvagrant")
+
+    _home = pwd.getpwuid(os.getuid()).pw_dir
 
     def __init__(self):
         super(VagrantDriver, self).__init__(key=None)
@@ -129,7 +129,8 @@ class VagrantDriver(base.NodeDriver):
                       volume.name, node.name)
         return True
 
-    def create_node(self, name, size, image, ex_networks=None, **kwargs):
+    def create_node(self, name, size, image, ex_networks=None,
+                    ex_allocate_sata_ports=30, **kwargs):
         """Create a new node instance. This instance will be started
         automatically.
 
@@ -148,6 +149,11 @@ class VagrantDriver(base.NodeDriver):
 
         :param ex_networks: The networks to connect this node to.
         :type ex_networks:  ``list`` of :class:`VagrantNetwork`
+
+        :param ex_allocate_sata_ports: Number of SATA ports to allocate on the
+                                       SATA controller (optional, defaults to
+                                       30)
+        :type ex_allocate_sata_ports: ``int``
 
         All other arguments are ignored.
 
@@ -174,11 +180,12 @@ class VagrantDriver(base.NodeDriver):
                                private_ips=private_ips,
                                driver=self,
                                size=size,
-                               image=image)
+                               image=image,
+                               allocate_sata_ports=ex_allocate_sata_ports)
             self.log.debug("create_node(%s): Created object: %s", name, node)
             c.add_node(node)
             c.save()  # Explicit save, so that the next command succeeds
-            self.ex_start_node(node)
+            self._vagrant("up --provider virtualbox", node.name)
             self.log.info(".. Node '%s' created", name)
 
             node.id = c.virtualbox_uuid(node)
@@ -361,6 +368,10 @@ class VagrantDriver(base.NodeDriver):
         self.log.info("Destroying node '%s' ..", node.name)
         try:
             with self._catalogue as c:
+                for v in c.get_volumes():
+                    if v.attached_to == node.name:
+                        self.log.debug("destroy_node(): Detaching %s", v)
+                        self.detach_volume(v)
                 self._vagrant("destroy --force", node.name)
                 for ip in node._public_ips + node._private_ips:
                     self.log.debug("destroy_node(): Deallocating address %s",
@@ -368,10 +379,6 @@ class VagrantDriver(base.NodeDriver):
                     n = c.find_network(ip.network_name)
                     n.deallocate_address(ip.address)
                     c.update_network(n)
-                for v in c.get_volumes():
-                    if v.attached_to == node.name:
-                        self.log.debug("destroy_node(): Detaching %s", v)
-                        self.detach_volume(v)
                 c.remove_node(node)
             self.log.info(".. Node '%s' destroyed", node.name)
             return True
@@ -592,36 +599,6 @@ class VagrantDriver(base.NodeDriver):
                           exc_info=True)
             return NodeState.UNKNOWN
 
-    def ex_start_node(self, node):
-        """Starts a node.
-
-        This is an extension method.
-
-        :param node: The node object
-        :type node:  :class:`VagrantNode`
-
-        """
-        self.log.info("Starting node '%s' ..", node.name)
-        self._vagrant("up --provider virtualbox", node.name)
-        self.log.info(".. Node '%s' started", node.name)
-
-    def ex_stop_node(self, node):
-        """Stops a node.
-
-        This is an extension method.
-
-        :param node: The node object
-        :type node:  :class:`VagrantNode`
-
-        """
-        self.log.info("Stopping node '%s' ..", node.name)
-        with self._catalogue as c:
-            if node.id is None:
-                node_uuid = c.virtualbox_uuid(node)
-            else:
-                node_uuid = node.id
-            virtualbox.stop_node(node_uuid)
-        self.log.info(".. Node '%s' stopped", node.name)
 
     def _vagrant(self, *args):
         """Executes the ``vagrant`` command in machine-readable output format.
@@ -662,7 +639,7 @@ class VagrantDriver(base.NodeDriver):
         """Path to the Vagrant catalogue directory.
 
         """
-        dname = os.path.join(_HOME, ".libcloudvagrant")
+        dname = os.path.join(self._home, ".libcloudvagrant")
         if not os.access(dname, os.F_OK):
             os.mkdir(dname)
         return dname

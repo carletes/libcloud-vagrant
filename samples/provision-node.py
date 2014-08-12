@@ -27,7 +27,7 @@ import sys
 from libcloud.compute.deployment import ScriptDeployment
 from libcloud.compute.providers import get_driver
 
-from libcloudvagrant.driver import VAGRANT
+from libcloudvagrant import VAGRANT
 
 
 cls = get_driver(VAGRANT)
