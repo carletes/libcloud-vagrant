@@ -4,6 +4,12 @@ Changes in the development version
 Backwards-incompatible changes
 ------------------------------
 
+* The Vagrant plugin `vagrant-libcloud-helper`_ is now required.
+
+* ``libcloud-vagrant`` now checks that all components (Vagrant,
+  VirtualBox and required plugins) are present and at the expected
+  version numbers, throwing a ``RuntimeError`` if that's not the case.
+
 * Driver methods ``ex_start_node()`` and ``ex_stop_node()`` have been
   removed.
 
