@@ -31,6 +31,7 @@ __all__ = [
     "test_attach_volume",
     "test_create_volume",
     "test_destroy_volume",
+    "test_detach_unattached",
     "test_invalid_device",
     "test_move_volume",
 ]
@@ -54,6 +55,18 @@ def test_attach_volume(driver, node, volume):
     assert volume.attached_to is None
     assert driver.attach_volume(node, volume)
     assert volume.attached_to == node.name
+
+
+def test_detach_unattached(driver, node, volume):
+    """Detaching has no effect on unattached nodes.
+
+    """
+    assert volume.attached_to == None
+    assert driver.detach_volume(volume)
+
+    driver.attach_volume(node, volume)
+    node.destroy()
+    assert driver.detach_volume(volume)
 
 
 def test_move_volume(driver, volume):

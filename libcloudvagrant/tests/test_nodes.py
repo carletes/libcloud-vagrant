@@ -22,9 +22,12 @@
 
 import uuid
 
+from libcloud.compute.types import NodeState
+
 
 __all__ = [
     "test_create_node",
+    "test_node_state",
 ]
 
 
@@ -45,6 +48,22 @@ def test_create_node(driver):
             assert node.id == c.virtualbox_uuid(node)
     finally:
         driver.destroy_node(node)
+
+
+def test_node_state(driver):
+    """Node state reflects actual VirtualBox status.
+
+    """
+    node = driver.create_node(name=uuid.uuid4().hex,
+                              image=driver.get_image("hashicorp/precise64"),
+                              size=driver.list_sizes()[0])
+    assert driver.ex_get_node_state(node) == NodeState.RUNNING
+
+    driver.destroy_node(node)
+    assert driver.ex_get_node_state(node) == NodeState.UNKNOWN
+
+    node.id = None
+    assert driver.ex_get_node_state(node) == NodeState.UNKNOWN
 
 
 def test_ssh(node):

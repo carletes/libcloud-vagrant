@@ -628,8 +628,8 @@ class VagrantDriver(base.NodeDriver):
                 if ifname is not None:
                     virtualbox.destroy_host_interface(ifname)
                 c.remove_network(network)
+                self.log.info(".. Network '%s' destroyed", network.name)
                 return True
-            self.log.info(".. Network '%s' destroyed", network.name)
         except:
             self.log.warn("Cannot destroy network %s", network, exc_info=True)
             return False
