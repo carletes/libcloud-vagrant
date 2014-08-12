@@ -27,6 +27,14 @@ Backwards-compatible changes
   will be allocated on the first SATA controller.
 
 
+Bug fixes
+---------
+
+* Destroying nodes with attached disks raised an error when detaching
+  the disk (beacuse the node destruction hapened *before* the disk
+  detach).
+
+
 Changes in version 0.4.0
 ========================
 

@@ -370,6 +370,10 @@ class VagrantDriver(base.NodeDriver):
         self.log.info("Destroying node '%s' ..", node.name)
         try:
             with self._catalogue as c:
+                for v in c.get_volumes():
+                    if v.attached_to == node.name:
+                        self.log.debug("destroy_node(): Detaching %s", v)
+                        self.detach_volume(v)
                 self._vagrant("destroy --force", node.name)
                 for ip in node._public_ips + node._private_ips:
                     self.log.debug("destroy_node(): Deallocating address %s",
@@ -377,10 +381,6 @@ class VagrantDriver(base.NodeDriver):
                     n = c.find_network(ip.network_name)
                     n.deallocate_address(ip.address)
                     c.update_network(n)
-                for v in c.get_volumes():
-                    if v.attached_to == node.name:
-                        self.log.debug("destroy_node(): Detaching %s", v)
-                        self.detach_volume(v)
                 c.remove_node(node)
             self.log.info(".. Node '%s' destroyed", node.name)
             return True
