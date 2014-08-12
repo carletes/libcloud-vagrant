@@ -24,6 +24,8 @@ VirtualBox nodes, networks and volumes.
 """
 
 import os
+import re
+import subprocess
 import sys
 
 from libcloud.compute import providers
@@ -82,3 +84,43 @@ def test():  # pragma: no cover
     if can_run:
         print "Testing libcloud-vagrant %s" % (__version__,)
         return pytest.main([__name__])
+
+
+def execute(cmdline):
+    p = subprocess.Popen(cmdline,
+                         shell=True,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
+    stdout, _ = p.communicate()
+    if p.returncode:
+        raise RuntimeError("Cannot execute '%s': %s", cmdline, stdout)
+    return stdout.strip()
+
+
+def check_versions():
+    """Verifies the versions of VirtualBox, Vagrant and the required Vagrant
+    plugins.
+
+    """
+    vagrant_version = execute("vagrant --version")
+    if not vagrant_version.startswith("Vagrant 1.6"):
+        raise RuntimeError("Unsupported %s" % (vagrant_version,))
+
+    virtualbox_version = execute("VBoxManage --version")
+    if not virtualbox_version.startswith("4.3"):
+        raise RuntimeError("Unsupported VirtualBox %s" %
+                           (virtualbox_version,))
+
+    vagrant_plugins = execute("vagrant plugin list")
+    m = re.search(r"vagrant-libcloud-helper \((.+?)\)", vagrant_plugins)
+    if not m:
+        print >> sys.stderr, "Installing plugin 'vagrant-libcloud-helper'"
+        execute("vagrant plugin update vagrant-libcloud-helper")
+    else:
+        required = "0.0.2"
+        if m.group(1) != required:
+            print >> sys.stderr, "Updating plugin 'vagrant-libcloud-helper'"
+            execute("vagrant plugin update vagrant-libcloud-helper")
+
+
+check_versions()
