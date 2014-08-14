@@ -69,15 +69,11 @@ def test_destroy_node_detaches_volume(driver, volume):
     assert get_volume(driver, volume.name).attached_to == None
 
 
-def test_detach_unattached(driver, node, volume):
+def test_detach_unattached(driver, volume):
     """Detaching has no effect on unattached nodes.
 
     """
     assert volume.attached_to == None
-    assert driver.detach_volume(volume)
-
-    driver.attach_volume(node, volume)
-    node.destroy()
     assert driver.detach_volume(volume)
 
 
