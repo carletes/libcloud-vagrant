@@ -336,6 +336,7 @@ class VagrantDriver(base.NodeDriver):
         """
         node = volume.attached_to
         if not node:
+            self.log.debug("Volume '%s' not attached, returning", volume.name)
             return True
         try:
             with self._catalogue as c:
@@ -348,6 +349,7 @@ class VagrantDriver(base.NodeDriver):
                                   "which does not exist", volume.name, node)
                 volume.attached_to = None
                 c.update_volume(volume)
+                self.log.debug("Volume '%s' detached", volume.name)
                 return True
         except:
             self.log.warn("Cannot detach volume %s", volume.name,
@@ -397,12 +399,14 @@ class VagrantDriver(base.NodeDriver):
         :rtype: ``bool``
 
         """
+        self.log.info("Destroying volume '%s' ..", volume.name)
         if volume.attached_to:
             self.log.warn("Cannot destroy volume %s: It is attached to %s",
                           volume.name, volume.attached_to)
             return False
         with self._catalogue as c:
             c.remove_volume(volume)
+            self.log.info("... Volume '%s' destroyed", volume.name)
             try:
                 os.unlink(volume.path)
             except OSError:
