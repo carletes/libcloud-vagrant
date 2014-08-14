@@ -29,7 +29,11 @@ from pytest import raises
 
 from libcloud.common.types import LibcloudError
 
-from libcloudvagrant.tests import sample_network, sample_node
+from libcloudvagrant.tests import (
+    available_private_network,
+    sample_network,
+    sample_node,
+)
 
 
 __all__ = [
@@ -63,21 +67,25 @@ def test_create_duplicate_netwoks(driver, network):
     net2 = driver.ex_create_network(name=network.name, cidr=network.cidr)
     assert net2 == network
 
-    other_cidr = "192.168.0.0/24"
+    other_cidr = available_private_network()
     with raises(LibcloudError) as exc:
         driver.ex_create_network(name=network.name, cidr=other_cidr)
     assert exc.value.value == ("Network '%s' already defined" %
                                (network.name,))
 
 
-def test_destroy_network(driver, network):
+def test_destroy_network(driver):
     """Networks in use may not be destroyed.
 
     """
-    with sample_node(driver, networks=[network]):
-        assert not driver.ex_destroy_network(network)
+    cidr = available_private_network()
+    network = driver.ex_create_network(name="net1", cidr=cidr)
+    try:
+        with sample_node(driver, networks=[network]):
+            assert not driver.ex_destroy_network(network)
 
-    assert driver.ex_destroy_network(network)
+    finally:
+        assert driver.ex_destroy_network(network)
 
 
 def test_exhausted_networks(driver):
@@ -116,38 +124,39 @@ def test_list_networks(driver):
     """Networks are listed properly.
 
     """
-    assert len(driver.ex_list_networks()) == 0
+    n_networks = len(driver.ex_list_networks())
     with sample_network(driver, "net1") as net1:
         networks = driver.ex_list_networks()
-        assert len(networks) == 1
-        assert networks[0] == net1
+        assert len(networks) == n_networks + 1
+        assert net1 in networks
 
         with sample_network(driver, "net2") as net2:
             networks = driver.ex_list_networks()
-            assert len(networks) == 2
+            assert len(networks) == n_networks + 2
             assert net1 in networks
             assert net2 in networks
 
         networks = driver.ex_list_networks()
-        assert len(networks) == 1
-        assert networks[0] == net1
+        assert len(networks) == n_networks + 1
+        assert net1 in networks
+        assert net2 not in networks
 
-    assert len(driver.ex_list_networks()) == 0
+    assert len(driver.ex_list_networks()) == n_networks
 
 
 def test_overlapping_networks(driver):
     """Overlapping networks are not supported.
 
     """
-    with sample_network(driver, "net1", cidr="192.168.0.0/24"):
+    with sample_network(driver, "net1", cidr="172.16.0.0/24"):
         with raises(LibcloudError) as exc:
             driver.ex_create_network(name="net2",
-                                     cidr="192.168.0.0/23")
+                                     cidr="172.16.0.0/23")
         assert exc.value.value == "Network 'net2' overlaps with 'net1'"
 
         with raises(LibcloudError) as exc:
             driver.ex_create_network(name="net2",
-                                     cidr="192.168.0.0/25")
+                                     cidr="172.16.0.0/25")
         assert exc.value.value == "Network 'net2' overlaps with 'net1'"
 
 
