@@ -23,7 +23,7 @@
 import itertools
 import logging
 import tempfile
-import uuid
+import pprint
 
 import pytest
 
@@ -31,7 +31,7 @@ from libcloud.compute import providers
 
 from libcloudvagrant import VAGRANT
 
-from libcloudvagrant.tests import sample_network
+from libcloudvagrant.tests import sample_network, sample_node, sample_volume
 
 
 __all__ = [
@@ -48,7 +48,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(name)s %(message)s")
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.yield_fixture(scope="session")
 def driver(request):
     """Return a new driver instance, backed by a temporary directory. This
     driver instance will be used for all unit tests.
@@ -64,25 +64,19 @@ def driver(request):
                                          d.ex_list_networks()))
         if remaining:
             raise AssertionError("%s: Remaining objects: %s" %
-                                 (request.module,
-                                  ", ".join(repr(obj) for obj in remaining)))
+                                 (request.node, pprint.pformat(remaining)))
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope="session")
 def node(driver):
     """Return an ephemeral Ubuntu 12.04 node.
 
     """
-    node = driver.create_node(name=uuid.uuid4().hex,
-                              size=driver.list_sizes()[0],
-                              image=driver.get_image("hashicorp/precise64"))
-    try:
-        yield node
-    finally:
-        node.destroy()
+    with sample_node(driver) as n:
+        yield n
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope="session")
 def private_network(driver):
     """Return an ephemeral private network.
 
@@ -94,7 +88,7 @@ def private_network(driver):
 network = private_network
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope="session")
 def public_network(driver):
     """Return an ephemeral private network.
 
@@ -103,13 +97,13 @@ def public_network(driver):
         yield n
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope="function")
 def volume(driver):
     """Return an ephemeral 1 GB volume.
 
     """
-    volume = driver.create_volume(name=uuid.uuid4().hex, size=1)
-    try:
-        yield volume
-    finally:
-        volume.destroy()
+    with sample_volume(driver) as v:
+        try:
+            yield v
+        finally:
+            driver.detach_volume(v)
