@@ -40,7 +40,6 @@ __all__ = [
     "test_host_interface_cleanup",
     "test_list_networks",
     "test_overlapping_networks",
-    "test_public_network",
     "test_public_and_private_networks",
 ]
 
@@ -152,15 +151,6 @@ def test_overlapping_networks(driver):
             driver.ex_create_network(name="net2",
                                      cidr="172.16.0.0/25")
         assert exc.value.value == "Network 'net2' overlaps with 'net1'"
-
-
-def test_public_network(driver, public_network):
-    with sample_node(driver, networks=[public_network]) as n:
-        assert len(n.public_ips) == 1
-        addr = n.public_ips[0]
-        assert addr != public_network.host_address
-        assert ping(addr)
-        assert not n.private_ips
 
 
 def test_public_and_private_networks(driver, public_network, private_network):
