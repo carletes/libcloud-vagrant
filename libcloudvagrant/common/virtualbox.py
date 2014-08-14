@@ -21,6 +21,7 @@
 """Virtualbox-related code."""
 
 import logging
+import os
 import re
 import subprocess
 
@@ -32,6 +33,7 @@ __all__ = [
     "attach_volume",
     "create_volume",
     "destroy_host_interface",
+    "destroy_volume",
     "detach_volume",
     "get_host_interfaces",
     "get_node_state",
@@ -63,6 +65,13 @@ def destroy_host_interface(ifname):
 
 
 _VOLUME_RE_TEMPL = r'"(.+?)-(\d+)-(\d)"="(%s)"'
+
+
+def destroy_volume(volume_path):
+    cmdline = ["closemedium disk", volume_path]
+    if os.access(volume_path, os.F_OK):
+        cmdline.append("--delete")
+    vboxmanage(*cmdline)
 
 
 def detach_volume(node_uuid, volume_path):

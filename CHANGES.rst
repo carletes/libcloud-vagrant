@@ -40,6 +40,9 @@ Bug fixes
 * The command-line tool was not destroying volumes when requested to
   destroy everything.
 
+* Destroying volumes did not remove them from the Virtualbox media
+  registry.
+
 
 Changes in version 0.4.0
 ========================

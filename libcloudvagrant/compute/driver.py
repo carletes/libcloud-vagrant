@@ -404,13 +404,12 @@ class VagrantDriver(base.NodeDriver):
             self.log.warn("Cannot destroy volume %s: It is attached to %s",
                           volume.name, volume.attached_to)
             return False
+
         with self._catalogue as c:
+            virtualbox.destroy_volume(volume.extra["path"])
             c.remove_volume(volume)
-            self.log.info("... Volume '%s' destroyed", volume.name)
-            try:
-                os.unlink(volume.path)
-            except OSError:
-                self.log.warn("Cannot unlink %s", volume.path, exc_info=True)
+
+        self.log.info("... Volume '%s' destroyed", volume.name)
         return True
 
     def get_image(self, image_id):
