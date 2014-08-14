@@ -36,7 +36,7 @@ def test_create_node(driver):
 
     """
     node_name = uuid.uuid4().hex
-    assert node_name not in driver.list_images()
+    assert node_name not in driver.list_nodes()
 
     image = driver.get_image("hashicorp/precise64")
     size = driver.list_sizes()[0]
