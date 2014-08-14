@@ -24,6 +24,8 @@ import uuid
 
 from libcloud.compute.types import NodeState
 
+from libcloudvagrant.tests import sample_node
+
 
 __all__ = [
     "test_create_node",
@@ -38,28 +40,20 @@ def test_create_node(driver):
     node_name = uuid.uuid4().hex
     assert node_name not in driver.list_nodes()
 
-    image = driver.get_image("hashicorp/precise64")
-    size = driver.list_sizes()[0]
-    node = driver.create_node(node_name, size=size, image=image)
-    try:
+    with sample_node(driver) as node:
         assert node in driver.list_nodes()
 
         with driver._catalogue as c:
             assert node.id == c.virtualbox_uuid(node)
-    finally:
-        driver.destroy_node(node)
 
 
 def test_node_state(driver):
     """Node state reflects actual VirtualBox status.
 
     """
-    node = driver.create_node(name=uuid.uuid4().hex,
-                              image=driver.get_image("hashicorp/precise64"),
-                              size=driver.list_sizes()[0])
-    assert driver.ex_get_node_state(node) == NodeState.RUNNING
+    with sample_node(driver) as node:
+        assert driver.ex_get_node_state(node) == NodeState.RUNNING
 
-    driver.destroy_node(node)
     assert driver.ex_get_node_state(node) == NodeState.UNKNOWN
 
     node.id = None
