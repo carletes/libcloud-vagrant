@@ -37,6 +37,9 @@ Bug fixes
 * When a node was destroyed, all volumes attached to it were not marked
   as detached.
 
+* The command-line tool was not destroying volumes when requested to
+  destroy everything.
+
 
 Changes in version 0.4.0
 ========================
