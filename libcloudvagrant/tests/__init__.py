@@ -108,6 +108,7 @@ def sample_volume(driver, name=None):
     try:
         yield volume
     finally:
+        driver.detach_volume(volume)
         volume.destroy()
 
 
