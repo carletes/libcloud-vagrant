@@ -29,11 +29,7 @@ from pytest import raises
 
 from libcloud.common.types import LibcloudError
 
-from libcloudvagrant.tests import (
-    available_private_network,
-    sample_network,
-    sample_node,
-)
+from libcloudvagrant.tests import available_network, sample_network, sample_node
 
 
 __all__ = [
@@ -67,9 +63,8 @@ def test_create_duplicate_netwoks(driver, network):
     net2 = driver.ex_create_network(name=network.name, cidr=network.cidr)
     assert net2 == network
 
-    other_cidr = available_private_network()
     with raises(LibcloudError) as exc:
-        driver.ex_create_network(name=network.name, cidr=other_cidr)
+        driver.ex_create_network(name=network.name, cidr=available_network)
     assert exc.value.value == ("Network '%s' already defined" %
                                (network.name,))
 
@@ -78,8 +73,7 @@ def test_destroy_network(driver):
     """Networks in use may not be destroyed.
 
     """
-    cidr = available_private_network()
-    network = driver.ex_create_network(name="net1", cidr=cidr)
+    network = driver.ex_create_network(name="net1", cidr=available_network)
     try:
         with sample_node(driver, networks=[network]):
             assert not driver.ex_destroy_network(network)

@@ -30,7 +30,7 @@ import netifaces
 
 
 __all__ = [
-    "available_private_network",
+    "available_network",
     "sample_network",
     "sample_node",
     "sample_volume",
@@ -43,7 +43,7 @@ LOG = logging.getLogger("libcloudvagrant")
 ALLOCATED_NETWORKS = set()
 
 
-def available_private_network():
+def available_network():
     """Returns the first available 24-bit available network in the range of
     the 256 networks in the block 192.168/16.
 
@@ -68,7 +68,7 @@ def sample_network(driver, name=None, cidr=None, public=False):
 
     """
     name = name or uuid.uuid4().hex
-    cidr = cidr or str(available_private_network())
+    cidr = cidr or str(available_network())
     network = driver.ex_create_network(name, cidr, public)
     try:
         yield network
