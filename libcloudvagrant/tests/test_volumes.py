@@ -102,9 +102,12 @@ def test_create_volume(driver):
 
     size = 42
     volume = driver.create_volume(size=size, name=test_volume)
-    assert volume.name == test_volume
-    assert volume.size == size
-    assert volume in driver.list_volumes()
+    try:
+        assert volume.name == test_volume
+        assert volume.size == size
+        assert volume in driver.list_volumes()
+    finally:
+        driver.destroy_volume(volume)
 
 
 def test_destroy_volume(driver):
