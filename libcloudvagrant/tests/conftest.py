@@ -48,8 +48,8 @@ logging.basicConfig(level=logging.DEBUG,
                     format="%(asctime)s %(name)s %(message)s")
 
 
-@pytest.yield_fixture(scope="session")
-def driver():
+@pytest.yield_fixture(scope="module")
+def driver(request):
     """Return a new driver instance, backed by a temporary directory. This
     driver instance will be used for all unit tests.
 
@@ -62,7 +62,10 @@ def driver():
         remaining = list(itertools.chain(d.list_nodes(),
                                          d.list_volumes(),
                                          d.ex_list_networks()))
-        assert not remaining
+        if remaining:
+            raise AssertionError("%s: Remaining objects: %s" %
+                                 (request.module,
+                                  ", ".join(repr(obj) for obj in remaining)))
 
 
 @pytest.yield_fixture
