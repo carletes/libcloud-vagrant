@@ -77,20 +77,20 @@ def test_detach_unattached(driver, volume):
     assert driver.detach_volume(volume)
 
 
-def test_move_volume(driver, volume):
+def test_move_volume(driver, node, volume):
     """Attached volumes may be detached and attached to anothe node.
 
     """
-    with sample_node(driver) as n1, sample_node(driver) as n2:
-        assert driver.attach_volume(n1, volume)
-        assert volume.attached_to == n1.name
-        assert not driver.attach_volume(n2, volume)
+    with sample_node(driver) as other_node:
+        assert driver.attach_volume(node, volume)
+        assert volume.attached_to == node.name
+        assert not driver.attach_volume(other_node, volume)
 
         assert driver.detach_volume(volume)
         assert volume.attached_to is None
-        assert driver.attach_volume(n2, volume)
-        assert volume.attached_to == n2.name
-        assert not driver.attach_volume(n1, volume)
+        assert driver.attach_volume(other_node, volume)
+        assert volume.attached_to == other_node.name
+        assert not driver.attach_volume(node, volume)
 
 
 def test_create_volume(driver):
