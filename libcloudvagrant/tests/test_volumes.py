@@ -111,10 +111,11 @@ def test_create_volume(driver):
     assert volume in driver.list_volumes()
 
 
-def test_destroy_volume(driver, volume):
+def test_destroy_volume(driver):
     """Attached volumes may not be destroyed.
 
     """
+    volume = driver.create_volume(name="test-volume", size=1)
     volume.attached_to = "some-node"
     assert not driver.destroy_volume(volume)
 
