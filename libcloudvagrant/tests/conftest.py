@@ -20,6 +20,7 @@
 
 """py.text fixtures"""
 
+import itertools
 import logging
 import tempfile
 import uuid
@@ -58,8 +59,10 @@ def driver():
     try:
         yield d
     finally:
-        # XXX Implement cleanup here
-        pass
+        remaining = list(itertools.chain(d.list_nodes(),
+                                         d.list_volumes(),
+                                         d.ex_list_networks()))
+        assert not remaining
 
 
 @pytest.yield_fixture
