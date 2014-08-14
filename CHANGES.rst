@@ -34,6 +34,9 @@ Bug fixes
   the disk (beacuse the node destruction hapened *before* the disk
   detach).
 
+* When a node was destroyed, all volumes attached to it were not marked
+  as detached.
+
 
 Changes in version 0.4.0
 ========================

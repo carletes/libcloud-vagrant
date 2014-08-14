@@ -31,6 +31,7 @@ __all__ = [
     "test_attach_volume",
     "test_create_volume",
     "test_destroy_volume",
+    "test_destroy_node_detaches_volume",
     "test_detach_unattached",
     "test_invalid_device",
     "test_move_volume",
@@ -55,6 +56,17 @@ def test_attach_volume(driver, node, volume):
     assert volume.attached_to is None
     assert driver.attach_volume(node, volume)
     assert volume.attached_to == node.name
+
+
+def test_destroy_node_detaches_volume(driver, volume):
+    """Destroying a node detaches all volumes attached to it.
+
+    """
+    with sample_node(driver) as node:
+        assert driver.attach_volume(node, volume)
+        assert volume.attached_to == node.name
+
+    assert get_volume(driver, volume.name).attached_to == None
 
 
 def test_detach_unattached(driver, node, volume):
@@ -117,3 +129,9 @@ def test_invalid_device(driver, node, volume):
     """
     assert not driver.attach_volume(node, volume, "/dev/sdB")
     assert driver.attach_volume(node, volume, "/dev/sdb")
+
+
+def get_volume(driver, name):
+    for v in driver.list_volumes():
+        if v.name == name:
+            return v
