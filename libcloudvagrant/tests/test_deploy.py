@@ -22,6 +22,8 @@
 
 import uuid
 
+from contextlib import contextmanager
+
 from libcloud.compute.deployment import ScriptDeployment
 
 
@@ -37,7 +39,8 @@ def test_deploy_without_network(driver):
     """Deployment works for nodes without networks.
 
     """
-    deploy_node(driver, networks=[])
+    with deploy_node(driver, networks=[]):
+        pass
 
 
 def test_http_proxy(driver):
@@ -48,24 +51,27 @@ def test_http_proxy(driver):
     echo "Hello from $(hostname)"
     wget -O - https://github.com/carletes/libcloud-vagrant
     """
-    result = deploy_node(driver, script=script)
-    assert ("you could prototype a small cluster" in result)
+    with deploy_node(driver, script=script) as result:
+        assert ("you could prototype a small cluster" in result)
 
 
 def test_with_private_network(driver, private_network):
     """Deployment works for nodes with private networks.
 
     """
-    deploy_node(driver, networks=[private_network])
+    with deploy_node(driver, networks=[private_network]):
+        pass
 
 
 def test_with_public_network(driver, public_network):
     """Deployment works for nodes with public networks.
 
     """
-    deploy_node(driver, networks=[public_network])
+    with deploy_node(driver, networks=[public_network]):
+        pass
 
 
+@contextmanager
 def deploy_node(driver, networks=None, script=None):
     script = script or """#!/bin/sh
 
@@ -73,17 +79,16 @@ def deploy_node(driver, networks=None, script=None):
     """
     script = ScriptDeployment(script)
     name = uuid.uuid4().hex
-    image = driver.get_image("hashicorp/precise64")
+    node = driver.deploy_node(name=name,
+                              image=driver.get_image("hashicorp/precise64"),
+                              size=driver.list_sizes()[0],
+                              ex_networks=networks,
+                              deploy=script)
     try:
-        node = driver.deploy_node(name=name,
-                                  image=image,
-                                  size=driver.list_sizes()[0],
-                                  ex_networks=networks,
-                                  deploy=script)
         assert node.name == name
         assert script.exit_status == 0, script.stderr
         expected = "Hello from %s" % (node.name,)
         assert (expected in script.stdout), script.stdout
-        return script.stdout
+        yield script.stdout
     finally:
         driver.destroy_node(node)
