@@ -53,6 +53,13 @@ def destroy(driver):
             LOG.warn("Cannot destroy node '%s'", n.name, exc_info=True)
             ok = False
 
+    for v in driver.list_volumes():
+        try:
+            driver.destroy_volume(v)
+        except:
+            LOG.warn("Cannot destroy volume '%s'", v.name, exc_info=True)
+            ok = False
+
     for network in driver.ex_list_networks():
         try:
             driver.ex_destroy_network(network)
