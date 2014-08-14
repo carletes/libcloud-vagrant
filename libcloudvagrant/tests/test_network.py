@@ -64,7 +64,7 @@ def test_create_duplicate_netwoks(driver, network):
     assert net2 == network
 
     with raises(LibcloudError) as exc:
-        driver.ex_create_network(name=network.name, cidr=available_network)
+        driver.ex_create_network(name=network.name, cidr=available_network())
     assert exc.value.value == ("Network '%s' already defined" %
                                (network.name,))
 
@@ -73,7 +73,7 @@ def test_destroy_network(driver):
     """Networks in use may not be destroyed.
 
     """
-    network = driver.ex_create_network(name="net1", cidr=available_network)
+    network = driver.ex_create_network(name="net1", cidr=available_network())
     try:
         with sample_node(driver, networks=[network]):
             assert not driver.ex_destroy_network(network)
