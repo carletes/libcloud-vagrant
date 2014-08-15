@@ -66,6 +66,7 @@ def driver(request):
             raise AssertionError("Remaining objects: %s" %
                                  (pprint.pformat(rem),))
 
+        # XXX Revisit this
         ifaces = netifaces.interfaces()
         rem = [n for n in d.ex_list_networks() if n.host_interface in ifaces]
         if rem:
