@@ -25,6 +25,8 @@ import logging
 import tempfile
 import pprint
 
+import netifaces
+
 import pytest
 
 from libcloud.compute import providers
@@ -59,12 +61,16 @@ def driver(request):
     try:
         yield d
     finally:
-        remaining = list(itertools.chain(d.list_nodes(),
-                                         d.list_volumes(),
-                                         d.ex_list_networks()))
-        if remaining:
-            raise AssertionError("%s: Remaining objects: %s" %
-                                 (request.node, pprint.pformat(remaining)))
+        rem = list(itertools.chain(d.list_nodes(), d.list_volumes()))
+        if rem:
+            raise AssertionError("Remaining objects: %s" %
+                                 (pprint.pformat(rem),))
+
+        ifaces = netifaces.interfaces()
+        rem = [n for n in d.ex_list_networks() if n.host_interface in ifaces]
+        if rem:
+            raise AssertionError("Remaining objects: %s" %
+                                 (pprint.pformat(rem),))
 
 
 @pytest.yield_fixture(scope="session")
