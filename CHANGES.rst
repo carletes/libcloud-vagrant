@@ -37,7 +37,7 @@ Bug fixes
 ---------
 
 * Destroying nodes with attached disks raised an error when detaching
-  the disk (beacuse the node destruction hapened *before* the disk
+  the disk (because the node destruction happened *before* the disk
   detach).
 
 * When a node was destroyed, all volumes attached to it were not marked
