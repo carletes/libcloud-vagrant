@@ -175,11 +175,6 @@ class VagrantNetwork(Serializable):
         self.log.debug("deallocate_address(): Allocated: %s", self._allocated)
 
     def to_dict(self):
-        allocated = []
-        for addr in self._allocated:
-            params = addr.to_dict()
-            del params["network_name"]
-            allocated.append(params)
         return {
             "name": self.name,
             "cidr": str(self.cidr),
