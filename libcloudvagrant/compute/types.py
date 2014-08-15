@@ -90,7 +90,7 @@ class VagrantNetwork(Serializable):
 
     log = logging.getLogger("libcloudvagrant")
 
-    def __init__(self, name, cidr, public, allocated, host_interface):
+    def __init__(self, name, cidr, public, allocated, host_interface, driver):
         self.name = name
         self.cidr = ipaddr.IPNetwork(cidr)
         self.public = public
@@ -98,6 +98,7 @@ class VagrantNetwork(Serializable):
         for ip in allocated:
             self._allocate(VagrantAddress(ip, name))
         self.host_interface = host_interface
+        self.driver = driver
 
     @property
     def addresses(self):
@@ -128,6 +129,7 @@ class VagrantNetwork(Serializable):
         :rtype: ``list`` of :class:`.VagrantAddress` objects.
 
         """
+        self._allocated = set(self.driver._allocated_addresses(self))
         return list(self._allocated)
 
     def allocate_address(self):
@@ -164,13 +166,13 @@ class VagrantNetwork(Serializable):
                         :class:`ipaddr.IPv6Address`
 
         """
-        self.log.debug("deallocate_address(): Allocated: %s", self.allocated)
+        self.log.debug("deallocate_address(): Allocated: %s", self._allocated)
         for addr in self._allocated:
             if addr.address == address:
                 self._allocated.remove(addr)
                 self.log.debug("deallocate_address(): %s deallocated", address)
                 break
-        self.log.debug("deallocate_address(): Allocated: %s", self.allocated)
+        self.log.debug("deallocate_address(): Allocated: %s", self._allocated)
 
     def to_dict(self):
         allocated = []

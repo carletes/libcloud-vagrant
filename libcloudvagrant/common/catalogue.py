@@ -140,10 +140,11 @@ class VagrantCatalogue(object):
         except KeyError:
             raise LibcloudError("Unknown network '%s'" % (network_name,),
                                 driver=self.driver)
-        return VagrantNetwork.from_dict(**p)
+        return VagrantNetwork.from_dict(driver=self.driver, **p)
 
     def get_networks(self):
-        ret = [VagrantNetwork.from_dict(**p) for p in self._networks.values()]
+        ret = [VagrantNetwork.from_dict(driver=self.driver, **p)
+               for p in self._networks.values()]
         self.log.debug("get_networks(): Returning %s", ret)
         return ret
 
@@ -245,8 +246,8 @@ class VagrantCatalogue(object):
 
     def _address_details(self, ip):
         ip = VagrantAddress.from_dict(**ip).address
-        for name in self._networks:
-            n = VagrantNetwork.from_dict(**self._networks[name]).cidr
+        for name, params in self._networks.items():
+            n = VagrantNetwork.from_dict(driver=self.driver, **params).cidr
             if ip in n:
                 return {
                     "network": name, "ip": str(ip), "netmask": str(n.netmask),

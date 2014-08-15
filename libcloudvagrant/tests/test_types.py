@@ -43,24 +43,6 @@ def test_serializable():
     """
     assert_serializable(VagrantAddress,
                         {"address": "10.0.0.1", "network_name": "net1"})
-    assert_serializable(VagrantNetwork,
-                        {
-                            "name": "net1",
-                            "cidr": "10.0.0.0/8",
-                            "public": True,
-                            "allocated": [],
-                            "host_interface": "vboxnet4",
-                        },
-                        {
-                            "name": "net1",
-                            "cidr": "10.0.0.0/8",
-                            "public": True,
-                            "allocated": [
-                                "10.0.0.1",
-                                "10.0.0.2",
-                            ],
-                            "host_interface": None,
-                        })
 
 
 def test_serializable_with_driver(driver):
@@ -72,6 +54,25 @@ def test_serializable_with_driver(driver):
                                     VagrantImage,
                                     {
                                         "name": "ubuntu/trusty64",
+                                    })
+    assert_serializable_with_driver(driver,
+                                    VagrantNetwork,
+                                    {
+                                        "name": "net1",
+                                        "cidr": "10.0.0.0/8",
+                                        "public": True,
+                                        "allocated": [],
+                                        "host_interface": "vboxnet4",
+                                    },
+                                    {
+                                        "name": "net1",
+                                        "cidr": "10.0.0.0/8",
+                                        "public": True,
+                                        "allocated": [
+                                            "10.0.0.1",
+                                            "10.0.0.2",
+                                        ],
+                                        "host_interface": None,
                                     })
     assert_serializable_with_driver(driver,
                                     VagrantNode,

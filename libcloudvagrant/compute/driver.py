@@ -603,7 +603,8 @@ class VagrantDriver(base.NodeDriver):
                        name, cidr, public)
         with self._catalogue as c:
             network = VagrantNetwork(name, cidr, public,
-                                     allocated=[], host_interface=None)
+                                     allocated=[], host_interface=None,
+                                     driver=self)
             c.add_network(network)
             return network
 
@@ -682,6 +683,13 @@ class VagrantDriver(base.NodeDriver):
                           port=config["port"],
                           username=config["user"],
                           key_files=[config["key"]])
+
+    def _allocated_addresses(self, network):
+        with self._catalogue as c:
+            try:
+                return c.find_network(network.name)._allocated
+            except:
+                return []
 
     def _vagrant(self, *args):
         """Executes the ``vagrant`` command in machine-readable output format.
