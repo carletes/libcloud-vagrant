@@ -66,7 +66,7 @@ security.CA_CERTS_PATH.append(os.path.join(os.path.dirname(__file__),
                                            "ca-bundle.crt"))
 
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 
 def test():  # pragma: no cover
