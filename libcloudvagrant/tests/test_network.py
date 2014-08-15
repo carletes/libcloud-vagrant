@@ -99,8 +99,6 @@ def test_host_interface_cleanup(driver):
     destroyed.
 
     """
-    assert not any(i.startswith("vboxnet") for i in netifaces.interfaces())
-
     with sample_network(driver, "pub", public=True) as pub:
         with sample_node(driver, networks=[pub]):
             iface = pub.host_interface
