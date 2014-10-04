@@ -120,7 +120,7 @@ def check_versions():
     m = re.search(r"vagrant-libcloud-helper \((.+?)\)", vagrant_plugins)
     if not m:
         print >> sys.stderr, "Installing plugin 'vagrant-libcloud-helper'"
-        execute("vagrant plugin update vagrant-libcloud-helper")
+        execute("vagrant plugin install vagrant-libcloud-helper")
     else:
         required = "0.0.2"
         if m.group(1) != required:
