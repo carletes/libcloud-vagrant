@@ -69,12 +69,13 @@ class VagrantCatalogue(object):
                     self._objects = json.load(f)
                     self.log.debug("Loaded objects: %s",
                                    pprint.pformat(self._objects))
-            except:
+            except Exception as ex:
                 try:
                     self._lock.release()
                 except:
                     pass
-                raise
+                raise Exception("Failed reading catalogue %s: %s" % \
+                                (self._catalogue_json, str(ex)))
         else:
             self._objects = {}
             self._save_needed = True
